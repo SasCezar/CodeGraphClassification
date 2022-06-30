@@ -1,0 +1,13 @@
+# @package _global_
+defaults:
+  - _self_
+  - extraction: name
+  - embedding: fastText
+  - local: default
+
+  - override hydra/hydra_logging: colorlog
+  - override hydra/job_logging: colorlog
+
+dataset: ${base_path}/data/raw/classification_dataset_lang.csv
+language: java
+repositories_path: ${base_path}/data/raw/repositories/

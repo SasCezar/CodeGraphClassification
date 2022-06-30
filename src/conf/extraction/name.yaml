@@ -1,0 +1,4 @@
+_target_: src.feature.extract.NameFeatureExtraction
+graph_path: ${arcan_out}
+out_path: ${out_path}/processed/
+stopwords: None

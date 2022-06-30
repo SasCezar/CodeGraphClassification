@@ -1,0 +1,19 @@
+# @package _global_
+
+# specify here default configuration
+defaults:
+  - _self_
+  - pipeline: community_extraction.yaml
+
+  # enable color logging
+  - override hydra/hydra_logging: colorlog
+  - override hydra/job_logging: colorlog
+
+# path to original working directory
+# hydra hijacks working directory by changing it to the new log directory
+# https://hydra.cc/docs/next/tutorials/basic/running_your_app/working_directory
+original_work_dir: ${hydra:runtime.cwd}
+
+# default name for the experiment, determines logging folder path
+# (you can overwrite this name in pipeline configs)
+name: "default"

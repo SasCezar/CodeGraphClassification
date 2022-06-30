@@ -1,0 +1,7 @@
+# @package _global_
+
+base_path: /home/sasce/PycharmProjects/CodeGraphClassification
+out_path: ${base_path}/data/
+arcan_out: ${base_path}/data/interim/arcanOutput
+
+# dependency-graph-1_94a2ac55735e5b193cb92c9be9531c5d4d211446.graphml
