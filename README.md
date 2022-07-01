@@ -28,8 +28,17 @@ ___
 
 ### Prerequisites
 
-The first thing required to run the repository is to have a list of repositories in the format `user/repo`, in our case,
-this file is located in the `data` folder in a CSV format. The file name is `project_list.csv`
+The first thing required to run the repository is to have a list of repositories in the following CSV format:
+
+| `full_name`  | `[language]`  | `...` |
+|---|---|---|
+| `user/repo`  | `JAVA`  | `...`|
+
+Where the `language` is the programming language of the repository, and is optional (assumed to be same as the one
+specified in the config file if not specified).
+
+In our case, this file is located in the `data` folder in a CSV format. The file name
+is `classification_dataset_lang.csv`
 
 ### Data preparation
 

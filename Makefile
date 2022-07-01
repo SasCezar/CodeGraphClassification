@@ -1,10 +1,10 @@
 setup-env:
-	poetry activate
+	poetry shell
 
-extract-graph:
-	python ex
+extract-graph: setup-env
+	python src/pipelines/extract_graphs.py
 
-extract-features:
+extract-features: setup-env
 	echo Features
 
 extract: extract-graph-all extract-features
