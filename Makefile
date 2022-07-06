@@ -2,9 +2,9 @@ setup-env:
 	poetry shell
 
 extract-graph: setup-env
-	python src/pipelines/extract_graphs.py
+	python3 src/pipelines/extract_graphs.py
 
-extract-features: setup-env
-	echo Features
+extract-features:
+	python3 src/pipelines/extract_embeddings.py
 
-extract: extract-graph-all extract-features
+extract: extract-graph extract-features

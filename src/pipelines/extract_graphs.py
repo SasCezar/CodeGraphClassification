@@ -24,9 +24,10 @@ def extract_graph(cfg: DictConfig):
     projects = projects['full_name']
 
     logger.info(f"Extracting graphs for {len(projects)} projects")
-
+    projects = ['activej/activej']
+    languages = ['JAVA']
     for i, (project, language) in enumerate(zip(projects, languages)):
-        logger.info(f"Extracting features for {project} - Progress: {i / len(projects) * 100:.2f}%")
+        logger.info(f"Extracting features for {project} - Progress: {i + 1 / len(projects) * 100:.2f}%")
         try:
             command = [cfg.arcan_script, project, project.replace('/', '|'),
                        language, cfg.arcan_path, cfg.repository_path, cfg.arcan_out, join(cfg.logs_path, 'arcan')]

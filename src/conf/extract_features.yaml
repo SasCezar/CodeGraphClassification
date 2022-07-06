@@ -3,7 +3,7 @@ defaults:
   - _self_
   - extraction: name
   - embedding: fastText
-  - local: default
+  - local: docker
 
   - override hydra/hydra_logging: colorlog
   - override hydra/job_logging: colorlog

@@ -1,5 +1,5 @@
 # @package _global_
 
-base_path: /home/sasce/PycharmProjects/CodeGraphClassification
+base_path: /usr/local/CodeGraphClassification
 out_path: ${base_path}/data/
 arcan_out: ${base_path}/data/interim/
