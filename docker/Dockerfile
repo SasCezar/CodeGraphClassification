@@ -40,7 +40,7 @@ WORKDIR ./CodeGraphClassification
 
 ENV POETRY_VIRTUALENVS_CREATE=false
 
-ENV PYTHONPATH=${PYTHONPATH}:/usr/local/CodeGraphClassification/src
+ENV PYTHONPATH=${PYTHONPATH}:./CodeGraphClassification/src
 
 RUN pip3 install poetry
 RUN poetry install --no-interaction --no-ansi
