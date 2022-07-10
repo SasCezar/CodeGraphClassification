@@ -1,5 +1,5 @@
 # @package _global_
 
-base_path: /usr/local/CodeGraphClassification
+base_path: /CodeGraphClassification
 out_path: ${base_path}/data/
 arcan_out: ${base_path}/data/interim/

@@ -1,0 +1,13 @@
+version: "3.9"
+services:
+  cgc:
+    container_name: CodeGraphClassification
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile
+    stdin_open: true # docker run -i
+    tty: true        # docker run -t
+    volumes:
+      - type: bind
+        source: .
+        target: /CodeGraphClassification

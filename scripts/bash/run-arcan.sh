@@ -11,7 +11,8 @@ LOGS_PATH=$7
 
 mkdir -p $LOGS_PATH
 
-$ARCAN_PATH/arcan.sh analyze -i $REPOSITORY_PATH/$PROJECT_NAME -p $PROJECT_NAME --remote https://github.com/$PROJECT \
+$ARCAN_PATH/arcan.sh analyze -i $REPOSITORY_PATH/$PROJECT_NAME -p $PROJECT_NAME \
+              --remote https://github.com/$PROJECT \
               -o $OUTPATH -l $PROG_LANG -f $ARCAN_PATH/filters.yaml \
               -v output.writeDependencyGraph=true \
               output.writeAffected=false \

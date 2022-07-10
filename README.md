@@ -2,9 +2,9 @@
 
 This is the official repository of the paper: **_CodeGraphClassification: Classification of Source Code Repositories_**
 
-## Public Data
+## Data
 
-The data used to train the models is available at the following link:
+The data we used to train the models is available at the following link:
 
 Check the [Model Training](#Model Training) section to see how to use.
 
@@ -21,6 +21,13 @@ ___
 ## Reproducibility
 
 ### Setup
+
+#### Docker
+
+1. Use the `docker-compose` command to setup a docker environment with Python and Java environment already set;
+2. Connect to the container shell.
+
+#### Manually
 
 1. Install Poetry using the following guide: [https://python-poetry.org/docs/](https://python-poetry.org/docs/);
 2. Setup the environment by running: `make setup-env`;
