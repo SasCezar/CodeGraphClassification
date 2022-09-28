@@ -48,7 +48,7 @@ class FastTextEmbedding(AbstractEmbeddingModel):
     Class for embedding models using FastText model.
     """
 
-    def __init__(self, path, model='fastText'):
+    def __init__(self, path: str, model: str = 'fastText'):
         super().__init__()
         self._name = f'{model}'
         self.model = ft.load_model(path)
@@ -67,7 +67,7 @@ class W2VEmbedding(AbstractEmbeddingModel):
     Class for embedding models using Word2Vec model.
     """
 
-    def __init__(self, path, model='W2V-Unk'):
+    def __init__(self, path: str, model: str = 'W2V-Unk'):
         super().__init__()
         self._name = f'{model}'
         self.model = KeyedVectors.load_word2vec_format(path)

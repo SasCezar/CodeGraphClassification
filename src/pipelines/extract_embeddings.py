@@ -22,16 +22,16 @@ def extract_embeddings(cfg: DictConfig):
     projects = projects[projects['language'].str.lower() == cfg.language]
     projects = projects['full_name']
 
-    projects = ['activej/activej']
+    # projects = ['pac4j/vertx-pac4j']
 
     logger.info(f"Extracting features for {len(projects)} projects")
     for project in projects:
         logger.info(f"Extracting features for {project}")
 
-        project_url = 'https://github.com/' + project
+        project_url = f'https://github.com/{project}'
         project_name = project.replace('/', '|')
         git_clone(project_url, project_name, cfg.repositories_path)
-        versions = get_versions(project_name, cfg.arcan_out)
+        versions = get_versions(project_name, cfg.arcan_graphs)
 
         logger.info(f"Found {len(versions)} versions for project {project}")
         for num, sha in versions:

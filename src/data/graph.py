@@ -10,18 +10,18 @@ class GraphLoader(ABC):
 
 
 class ArcanGraphLoader(GraphLoader):
-    def __init__(self, clean=False):
+    def __init__(self, clean: bool = False):
         self.clean_edges = ["isChildOf", "isImplementationOf", "nestedTo",
                             "belongsTo", "implementedBy", "definedBy",
                             "containerIsAfferentOf", "unitIsAfferentOf"]
         self.clean = clean
 
-    def load(self, path):
+    def load(self, path: str):
         graph = igraph.Graph.Read_GraphML(path)
         graph = self._clean_graph(graph) if self.clean else graph
         return graph
 
-    def _clean_graph(self, graph):
+    def _clean_graph(self, graph: igraph.Graph):
         graph.es['weight'] = graph.es['Weight']
         delete = [x.index for x in graph.vs if "$" in x['name']]
         graph.delete_vertices(delete)

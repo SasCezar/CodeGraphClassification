@@ -4,14 +4,10 @@ defaults:
   - extraction: name
   - embedding: fastText
   - local: docker
+  - dataset: gitranking
 
   - override hydra/hydra_logging: colorlog
   - override hydra/job_logging: colorlog
 
-dataset: ${base_path}/data/raw/classification_dataset_lang.csv
-language: JAVA
-repositories_path: ${base_path}/data/raw/repositories/
-arcan_script: ${base_path}/scripts/bash/run-arcan.sh
-arcan_path: ${base_path}/tools/arcan
-repository_path: ${base_path}/data/raw/repositories
-logs_path: ${base_path}/logs/
+
+num_workers: 4

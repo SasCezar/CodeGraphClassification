@@ -1,4 +1,4 @@
-from os.path import join
+from os.path import join, exists
 from subprocess import call
 
 import hydra
@@ -7,36 +7,77 @@ from loguru import logger
 from omegaconf import DictConfig
 
 
+def check_status(path):
+    """
+    Checks if the project has already been processed.
+    :param path:
+    :return:
+    """
+    return exists(path)
+
+
+def run_arcan(cfg, project, language):
+    """
+    Runs the script to extract the graphs using Arcan. It also checks if the project has already been processed,
+     and if so, it skips it.
+    :param cfg:
+    :param project:
+    :param language:
+    :return:
+    """
+    try:
+        check_path = join(cfg.arcan_graphs, project.replace('/', '|'), '.completed')
+        completed = check_status(check_path)
+        if completed:
+            logger.info(f"Skipping {project} as it has already been processed")
+            return
+
+        command = [cfg.arcan_script, project, project.replace('/', '|'),
+                   language, cfg.arcan_path, cfg.repository_path, cfg.arcan_out, join(cfg.logs_path, 'arcan')]
+        logger.info(f"Running command: {' '.join(command)}")
+        call(command)
+
+        if not completed:
+            with open(check_path, 'wt') as outf:
+                logger.info(f"Creating file {outf.name}")
+
+        logger.info(f"Finished to extract graph for {project}")
+
+    except Exception as e:
+        logger.error(f"Failed to extract graph for {project}")
+        logger.error(f"{e}")
+
+    return
+
+
 @hydra.main(config_path="../conf", config_name="extract_features", version_base="1.2")
 def extract_graph(cfg: DictConfig):
     """
-    Extracts features from a project including the git history (augmented data).
+    Extracts graph from a project including the git history (augmented data).
     :param cfg:
     :return:
     """
-
     projects = pd.read_csv(cfg.dataset)
     if 'language' not in projects:
-        projects['language'] = cfg.language * len(projects)
+        projects['language'] = [cfg.language] * len(projects)
 
-    projects = projects[projects['language'].str.upper() == cfg.language]
-    languages = projects['language'].str.upper()
+    projects['language'] = projects['language'].str.upper()
+    projects = projects[projects['language'] == cfg.language.upper()]
+    languages = projects['language']
     projects = projects['full_name']
 
     logger.info(f"Extracting graphs for {len(projects)} projects")
-    projects = ['activej/activej']
-    languages = ['JAVA']
-    for i, (project, language) in enumerate(zip(projects, languages)):
-        logger.info(f"Extracting features for {project} - Progress: {i + 1 / len(projects) * 100:.2f}%")
-        try:
-            command = [cfg.arcan_script, project, project.replace('/', '|'),
-                       language, cfg.arcan_path, cfg.repository_path, cfg.arcan_out, join(cfg.logs_path, 'arcan')]
-            logger.info(f"Running command: {' '.join(command)}")
-            call(command)
-        except Exception as e:
-            logger.error(f"Failed to extract graph for {project}")
-            logger.error(f"{e}")
-            continue
+    # projects = ['pac4j/vertx-pac4j']
+    # languages = ['JAVA']
+    if cfg.num_workers > 1:
+        logger.info(f"Using {cfg.num_workers} workers")
+        from multiprocessing import Pool
+        with Pool(cfg.num_workers) as p:
+            p.starmap(run_arcan, zip([cfg] * len(projects), projects, languages))
+    else:
+        for i, (project, language) in enumerate(zip(projects, languages)):
+            logger.info(f"Extracting features for {project} - Progress: {i + 1 / len(projects) * 100:.2f}%")
+            run_arcan(cfg, project, language)
 
 
 if __name__ == '__main__':

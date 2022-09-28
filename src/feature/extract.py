@@ -1,8 +1,10 @@
 import os
 import re
 from abc import abstractmethod, ABC
-
 # import sourcy
+from typing import Iterable
+
+import igraph
 from more_itertools import flatten
 
 from data.graph import ArcanGraphLoader
@@ -15,7 +17,8 @@ class FeatureExtraction(ABC):
     Abstract method for extracting features.
     """
 
-    def __init__(self, model: AbstractEmbeddingModel, graph_path=None, out_path=None, stopwords=None):
+    def __init__(self, model: AbstractEmbeddingModel, graph_path: str = None, out_path: str = None,
+                 stopwords: Iterable = None):
         """
         :param model: Embedding model.
         :param graph_path: Path to the graph directory.
@@ -31,7 +34,7 @@ class FeatureExtraction(ABC):
         self.stopwords = stopwords
 
     @abstractmethod
-    def get_embeddings(self, project, graph):
+    def get_embeddings(self, project: str, graph: igraph.Graph):
         """
         Returns the embeddings of files in the graph.
         :param project:
@@ -41,13 +44,13 @@ class FeatureExtraction(ABC):
         raise NotImplemented()
 
     @staticmethod
-    def split_camel(name):
+    def split_camel(name: str):
         return re.sub(
             '([A-Z][a-z]+)|_', r' \1', re.sub('([A-Z]+)', r' \1', name)
         ).split()
 
     @staticmethod
-    def save_features(features, path, file):
+    def save_features(features, path: str, file: str):
         """
         Saves the features in the path.
         :param features:
@@ -64,13 +67,13 @@ class FeatureExtraction(ABC):
                 line = name + " " + rep + "\n"
                 outf.write(line)
 
-    def extract(self, project_name, sha=None, num=None, clean_graph=False):
+    def extract(self, project_name: str, sha: str = None, num: str = None, clean_graph: bool = False):
         """
         Extracts the features of the project.
-        :param project_name:
-        :param sha:
-        :param num:
-        :param clean_graph:
+        :param project_name: Name of the project.
+        :param sha: SHA of the project version.
+        :param num: Number of the project version in the git history.
+        :param clean_graph: Whether to clean the graph.
         :return:
         """
         graph_file = f"dependency-graph-{num}_{sha}.graphml"
@@ -89,11 +92,12 @@ class NameFeatureExtraction(FeatureExtraction):
     Extracts the features using the package name and class name as representation for the document.
     """
 
-    def __init__(self, model: AbstractEmbeddingModel, graph_path=None, out_path=None, stopwords=None):
+    def __init__(self, model: AbstractEmbeddingModel, graph_path: str = None, out_path: str = None,
+                 stopwords: str = None):
         super().__init__(model, graph_path, out_path, stopwords)
         self.method = 'name'
 
-    def get_embeddings(self, project, graph):
+    def get_embeddings(self, project: str, graph: igraph.Graph):
         """
         Returns the embeddings of files in the project.
         :param project: Name of the project
@@ -110,7 +114,7 @@ class NameFeatureExtraction(FeatureExtraction):
             embedding = self.nlp.get_embedding(clean)
             yield name, clean, embedding
 
-    def name_to_sentence(self, name):
+    def name_to_sentence(self, name: str):
         tokens = name.split(".")[2:]
         clean = []
 
@@ -125,15 +129,15 @@ class IdentifiersFeatureExtraction(FeatureExtraction):
     Extracts the features using the identifiers from the source code as representation for the document.
     """
 
-    def __init__(self, model: AbstractEmbeddingModel, graph_path=None, out_path=None,
-                 repo_path=None, preprocess=True, stopwords=None):
+    def __init__(self, model: AbstractEmbeddingModel, graph_path: str = None, out_path: str = None,
+                 repo_path: str = None, preprocess: bool = True, stopwords: Iterable = None):
         super().__init__(model, graph_path, out_path, stopwords)
         self.scp = None  # sourcy.load("java")
         self.preprocess = preprocess
         self.repositories = repo_path
         self.method = 'identifiers'
 
-    def get_embeddings(self, project, graph):
+    def get_embeddings(self, project: str, graph: igraph.Graph):
         """
         Returns the embeddings of files in the project.
         :param project: Name of the project
@@ -153,7 +157,7 @@ class IdentifiersFeatureExtraction(FeatureExtraction):
             yield node['filePathRelative'], path, embedding
 
     @staticmethod
-    def read_file(filename):
+    def read_file(filename: str):
         """
         Reads the file and returns the text.
         :param filename:
@@ -164,7 +168,7 @@ class IdentifiersFeatureExtraction(FeatureExtraction):
 
         return text
 
-    def get_identifiers(self, path):
+    def get_identifiers(self, path: str):
         """
         Returns the source code identifiers from the file.
         :param path:
