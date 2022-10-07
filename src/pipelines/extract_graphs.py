@@ -1,4 +1,7 @@
+import shutil
 from os.path import join, exists
+from pathlib import Path
+from shlex import quote
 from subprocess import call
 
 import hydra
@@ -16,7 +19,7 @@ def check_status(path):
     return exists(path)
 
 
-def run_arcan(cfg, project, language):
+def run_arcan(cfg, project, language) -> None:
     """
     Runs the script to extract the graphs using Arcan. It also checks if the project has already been processed,
      and if so, it skips it.
@@ -25,17 +28,23 @@ def run_arcan(cfg, project, language):
     :param language:
     :return:
     """
+    check_path = join(cfg.arcan_graphs, project.replace('/', '|'), '.completed')
+    completed = check_status(check_path)
     try:
-        check_path = join(cfg.arcan_graphs, project.replace('/', '|'), '.completed')
-        completed = check_status(check_path)
         if completed:
             logger.info(f"Skipping {project} as it has already been processed")
             return
 
-        command = [cfg.arcan_script, project, project.replace('/', '|'),
-                   language, cfg.arcan_path, cfg.repository_path, cfg.arcan_out, join(cfg.logs_path, 'arcan')]
+        command = [cfg.arcan_script]
+
+        args = [project, quote(project.replace('/', '|')),
+                language, cfg.arcan_path, cfg.repository_path, cfg.arcan_out, join(cfg.logs_path, 'arcan')]
+
+        command.extend(args)
+
         logger.info(f"Running command: {' '.join(command)}")
-        call(command)
+
+        call(" ".join(command), shell=True)
 
         if not completed:
             with open(check_path, 'wt') as outf:
@@ -47,7 +56,12 @@ def run_arcan(cfg, project, language):
         logger.error(f"Failed to extract graph for {project}")
         logger.error(f"{e}")
 
-    return
+    finally:
+        if not completed:
+            logger.info(f"Cleaning up {project} repository")
+            repo_path = join(cfg.repository_path, project.replace('/', '|'))
+            shutil.rmtree(repo_path, ignore_errors=True)
+        return
 
 
 @hydra.main(config_path="../conf", config_name="extract_features", version_base="1.2")
@@ -67,8 +81,10 @@ def extract_graph(cfg: DictConfig):
     projects = projects['full_name']
 
     logger.info(f"Extracting graphs for {len(projects)} projects")
-    # projects = ['pac4j/vertx-pac4j']
+    # # projects = ['pac4j/vertx-pac4j']
+    # projects = ['StuyPulse/Rafael']
     # languages = ['JAVA']
+    Path(join(cfg.logs_path, 'arcan')).mkdir(parents=True, exist_ok=True)
     if cfg.num_workers > 1:
         logger.info(f"Using {cfg.num_workers} workers")
         from multiprocessing import Pool
@@ -76,7 +92,7 @@ def extract_graph(cfg: DictConfig):
             p.starmap(run_arcan, zip([cfg] * len(projects), projects, languages))
     else:
         for i, (project, language) in enumerate(zip(projects, languages)):
-            logger.info(f"Extracting features for {project} - Progress: {i + 1 / len(projects) * 100:.2f}%")
+            logger.info(f"Extracting features for {project} - Progress: {(i + 1) / len(projects) * 100:.2f}%")
             run_arcan(cfg, project, language)
 
 

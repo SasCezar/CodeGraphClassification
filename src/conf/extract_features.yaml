@@ -10,4 +10,4 @@ defaults:
   - override hydra/job_logging: colorlog
 
 
-num_workers: 4
+num_workers: 1

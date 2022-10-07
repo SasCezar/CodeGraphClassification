@@ -16,12 +16,12 @@ class ArcanGraphLoader(GraphLoader):
                             "containerIsAfferentOf", "unitIsAfferentOf"]
         self.clean = clean
 
-    def load(self, path: str):
+    def load(self, path: str) -> igraph.Graph:
         graph = igraph.Graph.Read_GraphML(path)
         graph = self._clean_graph(graph) if self.clean else graph
         return graph
 
-    def _clean_graph(self, graph: igraph.Graph):
+    def _clean_graph(self, graph: igraph.Graph) -> igraph.Graph:
         graph.es['weight'] = graph.es['Weight']
         delete = [x.index for x in graph.vs if "$" in x['name']]
         graph.delete_vertices(delete)
