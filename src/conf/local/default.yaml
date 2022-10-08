@@ -4,3 +4,4 @@ base_path: /home/sasce/PycharmProjects/CodeGraphClassification
 out_path: ${base_path}/data/
 arcan_out: ${base_path}/data/interim/
 arcan_graphs: ${arcan_out}/arcanOutput
+raw_data: ${out_path}/raw/

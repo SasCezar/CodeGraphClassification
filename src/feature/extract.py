@@ -32,6 +32,7 @@ class FeatureExtraction(ABC):
         if not stopwords:
             stopwords = set()
         self.stopwords = stopwords
+        self.clone = True
 
     @abstractmethod
     def get_embeddings(self, project: str, graph: igraph.Graph):
@@ -96,6 +97,7 @@ class NameFeatureExtraction(FeatureExtraction):
                  stopwords: str = None):
         super().__init__(model, graph_path, out_path, stopwords)
         self.method = 'name'
+        self.clone = False
 
     def get_embeddings(self, project: str, graph: igraph.Graph):
         """

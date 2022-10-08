@@ -19,7 +19,8 @@ def extract_embeddings(cfg: DictConfig):
     extraction = instantiate(cfg.extraction, model=embedding)
 
     projects = pd.read_csv(cfg.dataset)
-    projects = projects[projects['language'].str.lower() == cfg.language]
+
+    projects = projects[projects['language'].str.upper() == cfg.language.upper()]
     projects = projects['full_name']
 
     # projects = ['pac4j/vertx-pac4j']
@@ -28,9 +29,10 @@ def extract_embeddings(cfg: DictConfig):
     for project in projects:
         logger.info(f"Extracting features for {project}")
 
-        project_url = f'https://github.com/{project}'
         project_name = project.replace('/', '|')
-        git_clone(project_url, project_name, cfg.repositories_path)
+        if extraction.clone:
+            project_url = f'https://github.com/{project}'
+            git_clone(project_url, project_name, cfg.repositories_path)
         versions = get_versions(project_name, cfg.arcan_graphs)
 
         logger.info(f"Found {len(versions)} versions for project {project}")
