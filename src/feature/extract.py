@@ -5,6 +5,7 @@ from abc import abstractmethod, ABC
 from typing import Iterable
 
 import igraph
+import pandas as pd
 from more_itertools import flatten
 
 from data.graph import ArcanGraphLoader
@@ -53,20 +54,19 @@ class FeatureExtraction(ABC):
     @staticmethod
     def save_features(features, path: str, file: str):
         """
-        Saves the features in the path.
-        :param features:
+        Saves the features in the path as a csv file.
+        The first column is the file name and the other columns are the embedding.
+        :param features: Features to save.
         :param path:
         :param file:
         :return:
         """
         out = os.path.join(path, file)
-        with open(out, "wt", encoding="utf8") as outf:
-            for name, cleaned, embedding in features:
-                if not isinstance(embedding, list):
-                    embedding = embedding.tolist()
-                rep = " ".join(str(x) for x in embedding)
-                line = name + " " + rep + "\n"
-                outf.write(line)
+        df = pd.DataFrame(features, columns=['name', 'cleaned', 'embedding'])
+        df['embedding'] = df['embedding'].apply(lambda x: x.tolist())
+        df = pd.concat([df, df['embedding'].apply(pd.Series)], axis=1)
+        df.drop(columns=['embedding', 'cleaned'], inplace=True)
+        df.to_csv(out, sep=' ', index=False, header=False)
 
     def extract(self, project_name: str, sha: str = None, num: str = None, clean_graph: bool = False):
         """
