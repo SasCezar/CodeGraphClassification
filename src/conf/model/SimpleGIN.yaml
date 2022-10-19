@@ -1,1 +1,1 @@
-_target_: src.model.gnn.SimpleGIN
+_target_: src.model.gin.SimpleGIN

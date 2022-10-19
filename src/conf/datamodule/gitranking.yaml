@@ -3,8 +3,6 @@ graph_dir: "/home/sasce/PycharmProjects/CodeGraphClassification/data/interim/arc
 feature_dir: "/home/sasce/PycharmProjects/CodeGraphClassification/data/processed/embedding/name/fastText"
 out_dir: "/home/sasce/PycharmProjects/CodeGraphClassification/data/processed/torch"
 embedding_size: 300
-batch_size: 256
+batch_size: 1024
 num_splits: ${num_splits}
 split: ${split}
-has_val: True
-has_test: True

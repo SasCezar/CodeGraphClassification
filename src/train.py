@@ -45,7 +45,7 @@ def train(cfg: DictConfig):
     tb_param_logger = TBParametersLoggingCallback()
     trainer = pl.Trainer(max_epochs=1,
                          callbacks=[latest_checkpoint, train_checkpoint, tb_param_logger, early_stop_callback],
-                         gpus=0,
+                         gpus=1,
                          logger=tb_logger,
                          fast_dev_run=False,
                          val_check_interval=0.3)

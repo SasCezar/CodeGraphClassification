@@ -1,10 +1,10 @@
 from typing import Optional
 
+from loguru import logger
 from pandas import DataFrame
-from sklearn.model_selection import GroupKFold
-from torch_geometric.data import DataLoader
-from torch_geometric.data.lightning_datamodule import LightningDataModule
-
+from sklearn.model_selection import GroupKFold, GroupShuffleSplit
+from torch.utils.data import DataLoader
+import pytorch_lightning as pl
 from data.dataset import GitRankingDataset
 
 '''
@@ -15,11 +15,10 @@ transform, and process the data
 '''
 
 
-class GitRankingDataModule(LightningDataModule):
-    def __init__(self, graph_dir: str, feature_dir: str, out_dir: str,
-                 projects: DataFrame, embedding_size: int, batch_size: int,
-                 num_splits: int, split: int, has_val: bool = True, has_test: bool = True, **kwargs):
-        super().__init__(has_val, has_test, **kwargs)
+class GitRankingDataModule(pl.LightningDataModule):
+    def __init__(self, graph_dir: str, feature_dir: str, out_dir: str, projects: DataFrame,
+                 embedding_size: int, batch_size: int, num_splits: int, split: int):
+        super().__init__()
         self.root = out_dir
         self.graph_dir = graph_dir
         self.feature_dir = feature_dir
@@ -35,6 +34,7 @@ class GitRankingDataModule(LightningDataModule):
         self.test_data = None
         self.projects_train = None
         self.projects_val = None
+        self.projects_test = None
         self.create_splits()
 
         self.transform = None
@@ -57,11 +57,11 @@ class GitRankingDataModule(LightningDataModule):
                                               projects=self.projects_val, out_dir=self.root,
                                               embedding_size=self.embedding_size, transform=self.transform,
                                               pre_transform=self.pre_transform, pre_filter=self.pre_filter)
-        # if stage == 'test' or stage is None:
-        #     self.test_data = ArcanDependenciesDataset(graph_dir=self.graph_dir, feature_dir=self.feature_dir,
-        #                                               projects=self.projects_test, out_dir=self.root,
-        #                                               embedding_size=self.embedding_size, transform=self.transform,
-        #                                               pre_transform=self.pre_transform, pre_filter=self.pre_filter)
+        if stage == 'test' or stage is None:
+            self.test_data = GitRankingDataset(graph_dir=self.graph_dir, feature_dir=self.feature_dir,
+                                               projects=self.projects_test, out_dir=self.root,
+                                               embedding_size=self.embedding_size, transform=self.transform,
+                                               pre_transform=self.pre_transform, pre_filter=self.pre_filter)
         else:
             raise ValueError(f"Stage {stage} not recognized.")
 
@@ -71,15 +71,23 @@ class GitRankingDataModule(LightningDataModule):
     def val_dataloader(self):
         return DataLoader(self.val_data, shuffle=False, batch_size=self.batch_size)
 
-    # def test_dataloader(self):
-    #     return DataLoader(self.test_data, shuffle=False, batch_size=self.batch_size)
+    def test_dataloader(self):
+        return DataLoader(self.test_data, shuffle=False, batch_size=self.batch_size)
 
     def create_splits(self):
         kf = GroupKFold(n_splits=self.num_splits)
-        all_splits = [k for k in kf.split(self.projects, groups=self.projects['name'].tolist())]
-        train_indexes, val_indexes = all_splits[self.split]
-        train_indexes, val_indexes = train_indexes.tolist(), val_indexes.tolist()
-        self.projects_train, self.projects_val = self.projects.iloc[train_indexes], self.projects.iloc[val_indexes]
+        gss = GroupShuffleSplit(n_splits=1, train_size=.8)
+        all_splits = list(kf.split(self.projects, groups=self.projects['name'].tolist()))
+        temp_indexes, val_indexes = all_splits[self.split]
+        temp_indexes, val_indexes = temp_indexes.tolist(), val_indexes.tolist()
+        projects_temp, self.projects_val = self.projects.iloc[temp_indexes], self.projects.iloc[val_indexes]
+        indexes = list(gss.split(projects_temp, groups=projects_temp['name'].tolist()))
+        logger.info(f"Indexes: {indexes}")
+        train_indexes, test_indexes = indexes[0]
+        self.projects_train, self.projects_test = projects_temp.iloc[train_indexes], projects_temp.iloc[test_indexes]
+        logger.info(f"Train: {len(self.projects_train)} projects, Val: {len(self.projects_val)} projects, "
+                    f"Test: {len(self.projects_test)} projects")
+
 
     @property
     def num_node_features(self) -> int:
