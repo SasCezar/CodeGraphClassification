@@ -1,8 +1,16 @@
+import ast
 import glob
 import os
+import random
 from os.path import basename, join
 from subprocess import call
 from typing import Tuple, List
+
+import numpy as np
+import pandas as pd
+import torch
+from more_itertools import flatten
+from sklearn import preprocessing
 
 
 def check_dir(path: str) -> None:
@@ -59,3 +67,19 @@ def get_versions(project: str, arcan_out: str) -> List[Tuple[str, str]]:
         num, sha = file.replace('.graphml', '').split("-")[-1].split("_")
         res.append((num, sha))
     return res
+
+
+def encode_labels(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Encodes the labels of a dataframe.
+    :param df:
+    :return:
+    """
+    df['label'] = df['label'].apply(ast.literal_eval).apply(tuple)
+    df['level'] = df['level'].apply(ast.literal_eval).apply(tuple)
+    labels = list(set(flatten(df['label'].tolist())))
+    label_encoder = preprocessing.LabelEncoder()
+    label_encoder.fit(labels)
+    res = df['label'].apply(lambda x: label_encoder.transform(x))
+    df['labels_id'] = res
+    return df.copy(deep=True)

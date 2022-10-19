@@ -7,7 +7,7 @@ from omegaconf import DictConfig
 from utils import git_clone, get_versions
 
 
-@hydra.main(config_path="../conf", config_name="extract_features", version_base="1.2")
+@hydra.main(config_path="../conf", config_name="main", version_base="1.2")
 def extract_embeddings(cfg: DictConfig):
     """
     Extracts features from a project including the git history (augmented data).

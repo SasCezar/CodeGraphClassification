@@ -1,0 +1,24 @@
+# @package _global_
+defaults:
+  - _self_
+  - extraction: name
+  - embedding: fastText
+  - local: default
+  - dataset: gitranking
+  - model: SimpleGIN
+  - datamodule: gitranking
+
+
+  - override hydra/hydra_logging: colorlog
+  - override hydra/job_logging: colorlog
+
+
+num_workers: 1
+
+# Parameters for cross-validation
+num_splits: 10
+split: 1
+
+seed: 42
+
+project_path: ${base_path}/data/raw/dataset_with_graphs.csv

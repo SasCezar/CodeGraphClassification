@@ -1,14 +1,24 @@
+import hydra
+import pandas
 import pytorch_lightning as pl
-from ptlight.src.callbacks.logging import TBParametersLoggingCallback
-from ptlight.src.datamodule.cifar import CIFAR10DataModule
-from ptlight.src.models.cnn import LightningNet
-from pytorch_lightning import loggers as pl_loggers
+from hydra.utils import instantiate
+from more_itertools import flatten
+from omegaconf import DictConfig
+from pytorch_lightning import loggers as pl_loggers, seed_everything
 from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 
+from src.callbacks.logging import TBParametersLoggingCallback
+from utils import encode_labels
 
-def train():
-    data_module = CIFAR10DataModule()
-    model = LightningNet()
+
+@hydra.main(config_path="conf", config_name="main", version_base="1.2")
+def train(cfg: DictConfig):
+    seed_everything(cfg.seed)
+    projects = pandas.read_csv(cfg.project_path)
+    projects = encode_labels(projects)
+    num_classes = len(set(flatten(projects["label"].tolist())))
+    data_module = instantiate(cfg.datamodule, projects=projects)
+    model = instantiate(cfg.model, num_classes=num_classes, num_features=300)
 
     train_checkpoint = ModelCheckpoint(
         filename="{epoch}-{step}-{train_loss:.1f}",
@@ -35,13 +45,13 @@ def train():
     tb_param_logger = TBParametersLoggingCallback()
     trainer = pl.Trainer(max_epochs=1,
                          callbacks=[latest_checkpoint, train_checkpoint, tb_param_logger, early_stop_callback],
-                         gpus=1,
+                         gpus=0,
                          logger=tb_logger,
                          fast_dev_run=False,
-                         progress_bar_refresh_rate=20, val_check_interval=0.3)
+                         val_check_interval=0.3)
 
     trainer.fit(model, data_module)
-    trainer.test(model, data_module)
+    trainer.validate(model, data_module)
 
 
 if __name__ == '__main__':

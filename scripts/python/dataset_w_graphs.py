@@ -64,7 +64,7 @@ def create_dataframe(arcan_graphs, label_map, level_map) -> pd.DataFrame:
 
 def main():
     with initialize(version_base=None, config_path="../../src/conf/"):
-        cfg = compose(config_name='extract_features.yaml', overrides=["local=default"])
+        cfg = compose(config_name='main.yaml', overrides=["local=default"])
 
     arcan_graphs_paths = load_arcan_graphs_path(cfg)
     arcan_graphs, skipped = load_arcan_graphs(arcan_graphs_paths)

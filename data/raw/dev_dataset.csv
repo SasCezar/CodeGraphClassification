@@ -1,0 +1,100 @@
+name,label,level,version,sha,nodes,edges
+Norconex|collector-filesystem,"['search engine', 'web crawler']","[3, 5]",133,292a42769f7f6f1beaf4b178c3f7170fddfee282,68,212
+Norconex|collector-filesystem,"['search engine', 'web crawler']","[3, 5]",63,c01cf7bf4093aa21fafc1fba93ba50ca0343c619,36,110
+Norconex|collector-filesystem,"['search engine', 'web crawler']","[3, 5]",72,785b7928896b302fd84d81f9437ec47af5d7b330,36,110
+Norconex|collector-filesystem,"['search engine', 'web crawler']","[3, 5]",21,b08c040bfe57cb1f3220ca487d33b0240a6564fa,39,155
+Norconex|collector-filesystem,"['search engine', 'web crawler']","[3, 5]",115,30cb73f240f83e7a3a363d4a5a5d27c04e313907,68,212
+Norconex|collector-filesystem,"['search engine', 'web crawler']","[3, 5]",140,7c16b72fdb8a7db9066bbe3fe1b138e340f9a2ea,77,245
+Norconex|collector-filesystem,"['search engine', 'web crawler']","[3, 5]",129,424bf7310ae143f83d81f7355d0f94845513c204,68,212
+Norconex|collector-filesystem,"['search engine', 'web crawler']","[3, 5]",97,7caa497eab82995a62c9a47bef1cf6f7a4ffb67d,36,110
+Norconex|collector-filesystem,"['search engine', 'web crawler']","[3, 5]",153,9cfe8898f14e5fdd3461482d028fac5a3e472810,80,258
+Norconex|collector-filesystem,"['search engine', 'web crawler']","[3, 5]",157,faca3000e56347e2ca2f677825fefd874097145f,80,256
+Norconex|collector-filesystem,"['search engine', 'web crawler']","[3, 5]",60,43ce584eb693b2ad1896a58cd889585be9b60e2e,36,110
+Norconex|collector-filesystem,"['search engine', 'web crawler']","[3, 5]",64,42548c7bbe259d83ed7d094afe1f4258a8ae0124,36,110
+Norconex|collector-filesystem,"['search engine', 'web crawler']","[3, 5]",163,b3e600eba5558f0312e7b15c7fd33463cc042390,80,256
+Norconex|collector-filesystem,"['search engine', 'web crawler']","[3, 5]",160,98c33475b9fcc3a1f3e8481911d9221d9f285076,80,258
+Norconex|collector-filesystem,"['search engine', 'web crawler']","[3, 5]",68,16fa1f3119b0b4a965e5308056719ffec8463e86,36,110
+Norconex|collector-filesystem,"['search engine', 'web crawler']","[3, 5]",42,2a0b2de1afa858395598e8fe0b11f5cec736f19a,36,107
+Norconex|collector-filesystem,"['search engine', 'web crawler']","[3, 5]",125,cbb972e6d0dd8735151f81f9645db5821e04cd52,68,212
+Norconex|collector-filesystem,"['search engine', 'web crawler']","[3, 5]",71,36ac5587e7a92906a0536c0cdd209f969f24bc2d,36,110
+Norconex|collector-filesystem,"['search engine', 'web crawler']","[3, 5]",132,b5ed6589c411248f3c42191dcec9bdb15c34d310,68,212
+Norconex|collector-filesystem,"['search engine', 'web crawler']","[3, 5]",158,6a5a7eca829beb5ce1b911f645a8822fe2510b46,80,258
+Norconex|collector-filesystem,"['search engine', 'web crawler']","[3, 5]",99,f04df31fce8c703217a85f6dd55988054dc4cb9e,36,110
+Norconex|collector-filesystem,"['search engine', 'web crawler']","[3, 5]",89,546d0adc1aacb6b3e9c7e6ba297337d27d32ac36,36,110
+Norconex|collector-filesystem,"['search engine', 'web crawler']","[3, 5]",145,ef04e732ecd9fcc042668125752dd408450f12b0,77,245
+Norconex|collector-filesystem,"['search engine', 'web crawler']","[3, 5]",101,b2e8f9fcb548b5a940017890b42424d13acd2cec,36,110
+Norconex|collector-filesystem,"['search engine', 'web crawler']","[3, 5]",104,1487f5876249052112ee664cb7cb5bd7804e6c87,47,158
+Norconex|collector-filesystem,"['search engine', 'web crawler']","[3, 5]",146,74a799317f44cf9dddf1854854ca21784a11ab5a,77,246
+Norconex|collector-filesystem,"['search engine', 'web crawler']","[3, 5]",156,2af146b4838d152fd5ee2e6ced58d4d9d993645d,80,258
+Norconex|collector-filesystem,"['search engine', 'web crawler']","[3, 5]",111,36f0504f5c1716732a98defcefa2d37fc856f9c7,69,211
+Norconex|collector-filesystem,"['search engine', 'web crawler']","[3, 5]",162,5221e66a95350e3c95769be707e34decf95dde43,80,256
+Norconex|collector-filesystem,"['search engine', 'web crawler']","[3, 5]",155,c839b677d52f4b4cc3e169e2f3ebafdbf249017b,80,258
+Norconex|collector-filesystem,"['search engine', 'web crawler']","[3, 5]",84,3b6720285bf010a2616ecf968b1809dfb3e8eafa,36,110
+Norconex|collector-filesystem,"['search engine', 'web crawler']","[3, 5]",75,15c68b38a90806aefb3726a1d14d692f96f021bf,36,110
+Norconex|collector-filesystem,"['search engine', 'web crawler']","[3, 5]",164,647015be99f9391e1d660b5d7f582924eaa37acf,80,258
+Norconex|collector-filesystem,"['search engine', 'web crawler']","[3, 5]",130,1d5bc0b4a3c9c2ec777f1ca56e2e91c8fff11ad5,68,212
+Norconex|collector-filesystem,"['search engine', 'web crawler']","[3, 5]",94,768bd216a8b76fef3bc84d1d2910612f647c9ab7,36,110
+Norconex|collector-filesystem,"['search engine', 'web crawler']","[3, 5]",149,eb9ac0d33e4201c9cb745c8c2790ec9bc6c6784a,80,262
+Norconex|collector-filesystem,"['search engine', 'web crawler']","[3, 5]",98,f4a721cb91b97c593e9210a23c3fdb2372fe38b2,36,110
+Norconex|collector-filesystem,"['search engine', 'web crawler']","[3, 5]",136,ec7a1a6f957831413c4b33e50c1d05c33a2b4f0e,68,212
+Norconex|collector-filesystem,"['search engine', 'web crawler']","[3, 5]",12,a14a90356a1791ebe6e17f8bcf4e399c8534aa73,22,75
+Norconex|collector-filesystem,"['search engine', 'web crawler']","[3, 5]",58,60e8340692a36a55b661608f4f2707e8cd414966,36,110
+Norconex|collector-filesystem,"['search engine', 'web crawler']","[3, 5]",29,cbfea6129d71f6875ac87d2925e91f636f470c55,38,109
+Norconex|collector-filesystem,"['search engine', 'web crawler']","[3, 5]",121,1475f3dcc5ed2de7b8f6bcec373d4e515f00c90f,68,212
+Norconex|collector-filesystem,"['search engine', 'web crawler']","[3, 5]",82,7703d551ddc053984995634ecc01527f6ded7196,36,110
+Norconex|collector-filesystem,"['search engine', 'web crawler']","[3, 5]",134,d95e617dd68390e1a42ed6893f54b6923f8d83b9,68,212
+Norconex|collector-filesystem,"['search engine', 'web crawler']","[3, 5]",88,7952e0ddd759b1c0d5a13dec468bd7660f03192b,36,110
+Norconex|collector-filesystem,"['search engine', 'web crawler']","[3, 5]",13,cc308c9b2ce841ec97abb0bb0341945b02a3fb08,30,108
+awslabs|multi-model-server,"['deep learning', 'artificial neural network', 'server', 'artificial intelligence', 'Bayesian inference']","[6, 6, 4, 2, 7]",1157,c8efee5821b26e5da3239f37d9bfd684f2aec429,125,596
+awslabs|multi-model-server,"['deep learning', 'artificial neural network', 'server', 'artificial intelligence', 'Bayesian inference']","[6, 6, 4, 2, 7]",1176,363c5642444b42d290c0a6a57a8674506efc6e3f,125,596
+awslabs|multi-model-server,"['deep learning', 'artificial neural network', 'server', 'artificial intelligence', 'Bayesian inference']","[6, 6, 4, 2, 7]",1204,aa7c2309aa7da429c4f86c0b863918ddf0fbceb1,125,596
+awslabs|multi-model-server,"['deep learning', 'artificial neural network', 'server', 'artificial intelligence', 'Bayesian inference']","[6, 6, 4, 2, 7]",1173,0b635b675fef813cd550fe552ac17c1c67b1490d,125,596
+awslabs|multi-model-server,"['deep learning', 'artificial neural network', 'server', 'artificial intelligence', 'Bayesian inference']","[6, 6, 4, 2, 7]",1221,1fee69499137522aca6946275b298a2bf1c01baf,124,590
+awslabs|multi-model-server,"['deep learning', 'artificial neural network', 'server', 'artificial intelligence', 'Bayesian inference']","[6, 6, 4, 2, 7]",1031,a01138a59703bb64d1ed91ea8b686a4f66b17e68,87,377
+awslabs|multi-model-server,"['deep learning', 'artificial neural network', 'server', 'artificial intelligence', 'Bayesian inference']","[6, 6, 4, 2, 7]",1162,3b5329aa9c6b4a90a2ca265c4e1d9ada6359b035,125,596
+awslabs|multi-model-server,"['deep learning', 'artificial neural network', 'server', 'artificial intelligence', 'Bayesian inference']","[6, 6, 4, 2, 7]",1190,423c5cef9e42be463b2ca032b6a48c10796381a3,125,596
+awslabs|multi-model-server,"['deep learning', 'artificial neural network', 'server', 'artificial intelligence', 'Bayesian inference']","[6, 6, 4, 2, 7]",989,abdae2eeafd0043e60c2f0f7b269ebcd416c12dc,86,371
+awslabs|multi-model-server,"['deep learning', 'artificial neural network', 'server', 'artificial intelligence', 'Bayesian inference']","[6, 6, 4, 2, 7]",1183,62e7c292573053dab0d8e371287d9680032347f6,125,596
+awslabs|multi-model-server,"['deep learning', 'artificial neural network', 'server', 'artificial intelligence', 'Bayesian inference']","[6, 6, 4, 2, 7]",1084,b98407d4b6e8668dea2ea26e142287a7168deed3,87,379
+awslabs|multi-model-server,"['deep learning', 'artificial neural network', 'server', 'artificial intelligence', 'Bayesian inference']","[6, 6, 4, 2, 7]",1117,9f42e51fdf6596a6e698483f496c7e1f72323304,123,585
+awslabs|multi-model-server,"['deep learning', 'artificial neural network', 'server', 'artificial intelligence', 'Bayesian inference']","[6, 6, 4, 2, 7]",1128,a82ab3a8a021ef05c9e0c54656ecae3ba8d0dc79,123,587
+awslabs|multi-model-server,"['deep learning', 'artificial neural network', 'server', 'artificial intelligence', 'Bayesian inference']","[6, 6, 4, 2, 7]",936,479d523ecd1f7606f214878a6b51a36948da4746,86,367
+awslabs|multi-model-server,"['deep learning', 'artificial neural network', 'server', 'artificial intelligence', 'Bayesian inference']","[6, 6, 4, 2, 7]",1051,2876a3f2f97c373d5ed9e3f380debd9a24c8892d,87,379
+awslabs|multi-model-server,"['deep learning', 'artificial neural network', 'server', 'artificial intelligence', 'Bayesian inference']","[6, 6, 4, 2, 7]",1133,1de5b6b297082230243983e165e95b0c052c59be,123,586
+awslabs|multi-model-server,"['deep learning', 'artificial neural network', 'server', 'artificial intelligence', 'Bayesian inference']","[6, 6, 4, 2, 7]",1210,c5a9a1ca2d9fb5d710220b9cfa8e3a1335163847,125,596
+awslabs|multi-model-server,"['deep learning', 'artificial neural network', 'server', 'artificial intelligence', 'Bayesian inference']","[6, 6, 4, 2, 7]",1008,cabcc233ca1f3a5620cbdaef8f03c4357bdae3d9,87,374
+awslabs|multi-model-server,"['deep learning', 'artificial neural network', 'server', 'artificial intelligence', 'Bayesian inference']","[6, 6, 4, 2, 7]",1070,84dda9e63568a8a3a8501c29ecf34d2541903588,87,379
+awslabs|multi-model-server,"['deep learning', 'artificial neural network', 'server', 'artificial intelligence', 'Bayesian inference']","[6, 6, 4, 2, 7]",978,941df2961b94e9d48d5041c393409fb3eb9e6320,86,371
+awslabs|multi-model-server,"['deep learning', 'artificial neural network', 'server', 'artificial intelligence', 'Bayesian inference']","[6, 6, 4, 2, 7]",1202,229344494742fc438ad47273c47e6fd25aede9ee,125,596
+awslabs|multi-model-server,"['deep learning', 'artificial neural network', 'server', 'artificial intelligence', 'Bayesian inference']","[6, 6, 4, 2, 7]",1220,769ad6bd6fb85a8013bccdea709beda491f6e048,124,590
+awslabs|multi-model-server,"['deep learning', 'artificial neural network', 'server', 'artificial intelligence', 'Bayesian inference']","[6, 6, 4, 2, 7]",1108,7a68ccaa238d1dc00891b23ad2929a4055ed2d2b,119,554
+awslabs|multi-model-server,"['deep learning', 'artificial neural network', 'server', 'artificial intelligence', 'Bayesian inference']","[6, 6, 4, 2, 7]",1211,02c3526a93fa7de1290688d4e7af55da2a920fec,125,596
+awslabs|multi-model-server,"['deep learning', 'artificial neural network', 'server', 'artificial intelligence', 'Bayesian inference']","[6, 6, 4, 2, 7]",1144,d0c6c756b669308248228c20f2ebc44ec25d2c71,125,596
+apache|apex-core,['big data'],[3],6111,f6f6d5f541bb88301a4b401392e848ee0d2bc3c9,375,2318
+apache|apex-core,['big data'],[3],4982,a7815557e75b9dc702fb464689b45988d5cf8fa9,284,1779
+apache|apex-core,['big data'],[3],5977,7c4f308654b9ef72fd9ad5a41074b5b03d4a0825,362,2219
+apache|apex-core,['big data'],[3],3531,ad90dce6800f7cf8eee710934ba8f173a6775a4b,269,1666
+apache|apex-core,['big data'],[3],3860,6dcc52f3f2910d31cb5026b8fb5baccf61b49dd2,278,1743
+apache|apex-core,['big data'],[3],6000,ae46b47cdfcd839cce69f01681af56764e16b2ca,362,2224
+apache|apex-core,['big data'],[3],1469,a474e71d1f939cfbe410cec72463b8f5f8805c56,143,774
+apache|apex-core,['big data'],[3],6289,5a42ffb900b0f06548e3bafbad903ba80f79b11c,419,2724
+apache|apex-core,['big data'],[3],3197,cd08f49b119d88182a68fad308652d6171708647,257,1625
+apache|apex-core,['big data'],[3],4833,2f7cb6daed849ea759f30469e9ebc7af0eed6d83,284,1775
+apache|apex-core,['big data'],[3],53,f73ced2191823a69f14294701a6c902d55dbd6d3,55,223
+apache|apex-core,['big data'],[3],1153,d6b95183cb1ad6cf04cf987bd60cff5d6ef08136,132,634
+apache|apex-core,['big data'],[3],1,c009003628cd09ab14215e10f52ec1b492b6f24f,11,18
+apache|apex-core,['big data'],[3],4501,80efa36a80883c47d466d4fdca4d068a3404f2b4,289,1830
+apache|apex-core,['big data'],[3],4641,2ee5f6135d39fc9d48037cc585b89c26f4d76bbc,285,1793
+apache|apex-core,['big data'],[3],5680,0d5bfa5be27128de0be89335346c7c3cac40e31a,353,2162
+apache|apex-core,['big data'],[3],4914,366e43a850e713c951db4592e922639534428c33,5,4
+apache|apex-core,['big data'],[3],6274,646674ba9810b60d6e51950f6d12eb8bd5b0894a,419,2724
+apache|apex-core,['big data'],[3],2397,bf185627b6277c9106fa0f7dfcda01c20d01b1b7,215,1289
+apache|apex-core,['big data'],[3],6248,c78ebd8fbee2f13cea05d903034158b10cfbf8c5,416,2687
+apache|apex-core,['big data'],[3],4150,9040cb4118c497acba409b5f2208b7687153ad29,281,1789
+apache|apex-core,['big data'],[3],6019,9bcde2e306ce7f6c3199112ad5bb737370f6624e,362,2225
+apache|apex-core,['big data'],[3],6231,a0dd30d8fdc27c0503f59c93ea84f7edacf53137,412,2656
+apache|apex-core,['big data'],[3],6163,8d46cc6d1256d00ad14024dbf12c601835af14f6,386,2437
+apache|apex-core,['big data'],[3],4416,c83de71917520525150c2699c87ab695e096223e,288,1816
+apache|apex-core,['big data'],[3],6297,f09bc61fd09441e6c8c7d8c3aa10def7e74eb160,420,2737
+apache|apex-core,['big data'],[3],1220,fd92e389aaf566be8d479e0e1f6ca527099a014a,137,688
+apache|apex-core,['big data'],[3],6221,0de7be9b36a7b8ee0edb823e8c8eb376d4fdb277,410,2641
