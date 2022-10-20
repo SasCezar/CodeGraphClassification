@@ -5,6 +5,7 @@ from typing import Callable, Optional
 import numpy
 import torch
 import torch_geometric
+from loguru import logger
 from pandas import DataFrame
 from tqdm import tqdm
 
@@ -13,9 +14,8 @@ from data.graph import ArcanGraphLoader
 
 class GitRankingDataset(torch_geometric.data.Dataset):
     def __init__(self, graph_dir: str, feature_dir: str, out_dir: str,
-                 projects: DataFrame, embedding_size: int,
-                 transform: Optional[Callable] = None, pre_transform: Optional[Callable] = None,
-                 pre_filter: Optional[Callable] = None):
+                 projects: DataFrame, embedding_size: int, transform: Optional[Callable] = None,
+                 pre_transform: Optional[Callable] = None, pre_filter: Optional[Callable] = None):
 
         """
         :param graph_dir: directory containing the graphml files
@@ -35,6 +35,7 @@ class GitRankingDataset(torch_geometric.data.Dataset):
         self.proj_mapping = dict(zip(projects["name"], projects["label"]))
         self.label_id = dict(zip(projects["label"], projects["labels_id"]))
         self.projects_ver_sha = list(zip(self.projects['name'], self.projects['version'], self.projects['sha']))
+        self.shared_keys = self.get_shared_keys()
         super(GitRankingDataset, self).__init__(out_dir, transform, pre_transform, pre_filter)
 
     def download(self):
@@ -48,11 +49,21 @@ class GitRankingDataset(torch_geometric.data.Dataset):
     @property
     def raw_file_names(self):
         graphs = [join(self.graph_dir, project,
-                       f"dependency-graph-{version}_{sha}.graphml") for project, version, sha in self.projects_ver_sha]
+                       f"dependency-graph-{version}_{sha}.graphml") for project, version, sha in self.shared_keys]
         features = [join(self.feature_dir, project,
-                         f"dependency-graph-{version}_{sha}.vec") for project, version, sha in self.projects_ver_sha]
+                         f"dependency-graph-{version}_{sha}.vec") for project, version, sha in self.shared_keys]
 
         return graphs + features
+
+    def get_shared_keys(self):
+        shared_keys = []
+        for project, version, sha in self.projects_ver_sha:
+            if os.path.exists(join(self.graph_dir, project, f"dependency-graph-{version}_{sha}.graphml")) \
+                    and os.path.exists(join(self.feature_dir, project, f"dependency-graph-{version}_{sha}.vec")):
+                shared_keys.append((project, version, sha))
+
+        logger.info(f"Found {len(shared_keys)} shared keys")
+        return shared_keys
 
     @property
     def processed_paths(self):
@@ -62,14 +73,16 @@ class GitRankingDataset(torch_geometric.data.Dataset):
 
     @property
     def processed_file_names(self):
-        return [join(self.processed_dir, f"{project}-{version}_{sha}.vec") for project, version, sha in self.projects_ver_sha]
+        return [join(self.processed_dir, f"{project}-{version}_{sha}.pt") for project, version, sha in
+                self.get_shared_keys()]
 
     def process(self):
         """
         Process the dataset by aligning the graph nodes with the node features and save the data as
         a torch_geometric.data.Data object.
         """
-        for project, version, sha in tqdm(self.projects_ver_sha):
+
+        for project, version, sha in tqdm(self.shared_keys):
             graph_path = join(self.graph_dir, project, f"dependency-graph-{version}_{sha}.graphml")
             graph = ArcanGraphLoader().load(graph_path)
             edge_index = self._get_edge_index(graph)
@@ -134,13 +147,13 @@ class GitRankingDataset(torch_geometric.data.Dataset):
         """
         Return the number of data in the dataset.
         """
-        return len(self.projects_ver_sha)
+        return len(self.shared_keys)
 
     def get(self, idx):
         """
         Get the data object at index idx.
         """
-        project, version, sha = self.projects_ver_sha[idx]
+        project, version, sha = self.shared_keys[idx]
         data = torch.load(os.path.join(self.processed_dir, f"{project}-{version}_{sha}.pt"))
         return data
 

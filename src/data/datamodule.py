@@ -1,10 +1,12 @@
 from typing import Optional
 
 from loguru import logger
+from more_itertools import flatten
 from pandas import DataFrame
 from sklearn.model_selection import GroupKFold, GroupShuffleSplit
-from torch.utils.data import DataLoader
-import pytorch_lightning as pl
+from torch_geometric.data import DataLoader
+from torch_geometric.data.lightning_datamodule import LightningDataModule
+
 from data.dataset import GitRankingDataset
 
 '''
@@ -15,10 +17,11 @@ transform, and process the data
 '''
 
 
-class GitRankingDataModule(pl.LightningDataModule):
-    def __init__(self, graph_dir: str, feature_dir: str, out_dir: str, projects: DataFrame,
-                 embedding_size: int, batch_size: int, num_splits: int, split: int):
-        super().__init__()
+class GitRankingDataModule(LightningDataModule):
+    def __init__(self, graph_dir: str, feature_dir: str, out_dir: str,
+                 projects: DataFrame, embedding_size: int, batch_size: int,
+                 num_splits: int, split: int, has_val: bool = True, has_test: bool = True, **kwargs):
+        super().__init__(has_val, has_test, **kwargs)
         self.root = out_dir
         self.graph_dir = graph_dir
         self.feature_dir = feature_dir
@@ -48,24 +51,19 @@ class GitRankingDataModule(pl.LightningDataModule):
                           pre_transform=self.pre_transform, pre_filter=self.pre_filter)
 
     def setup(self, stage: Optional[str] = None):
-        if stage == 'fit' or stage is None:
-            self.train_data = GitRankingDataset(graph_dir=self.graph_dir, feature_dir=self.feature_dir,
-                                                projects=self.projects_train, out_dir=self.root,
-                                                embedding_size=self.embedding_size, transform=self.transform,
-                                                pre_transform=self.pre_transform, pre_filter=self.pre_filter)
-            self.val_data = GitRankingDataset(graph_dir=self.graph_dir, feature_dir=self.feature_dir,
-                                              projects=self.projects_val, out_dir=self.root,
-                                              embedding_size=self.embedding_size, transform=self.transform,
-                                              pre_transform=self.pre_transform, pre_filter=self.pre_filter)
-        if stage == 'test' or stage is None:
-            self.test_data = GitRankingDataset(graph_dir=self.graph_dir, feature_dir=self.feature_dir,
-                                               projects=self.projects_test, out_dir=self.root,
-                                               embedding_size=self.embedding_size, transform=self.transform,
-                                               pre_transform=self.pre_transform, pre_filter=self.pre_filter)
+        if stage == "fit" or stage is None:
+            logger.info("Creating train dataset")
+            logger.info(f"Train: {len(self.projects_train)} projects")
+            self.train_data = self._create_dataset(self.projects_train)
+            self.val_data = self._create_dataset(self.projects_val)
+            logger.info(f"Train: {len(self.train_data)} graphs, Val: {len(self.val_data)} graphs")
+        elif stage == "test" or stage is None:
+            self.test_data = self._create_dataset(self.projects_test)
         else:
             raise ValueError(f"Stage {stage} not recognized.")
 
     def train_dataloader(self):
+        logger.info(f"Train: {len(self.train_data)}")
         return DataLoader(self.train_data, shuffle=True, batch_size=self.batch_size)
 
     def val_dataloader(self):
@@ -88,11 +86,23 @@ class GitRankingDataModule(pl.LightningDataModule):
         logger.info(f"Train: {len(self.projects_train)} projects, Val: {len(self.projects_val)} projects, "
                     f"Test: {len(self.projects_test)} projects")
 
-
     @property
     def num_node_features(self) -> int:
         return self.embedding_size
 
     @property
     def num_classes(self) -> int:
-        return len(set())
+        return len(set(flatten(self.projects["label"].tolist())))
+
+    def _create_dataset(self, projects: DataFrame):
+        graph_dir = "/home/sasce/PycharmProjects/CodeGraphClassification/data/interim/arcanOutput"
+        feature_dir = "/home/sasce/PycharmProjects/CodeGraphClassification/data/processed/embedding/name/fastText"
+        out_dir = "/home/sasce/PycharmProjects/CodeGraphClassification/data/processed/torch"
+        logger.info(f"Creating dataset with {len(projects)} projects")
+        logger.info(f"Type of projects {type(projects)}")
+        data = GitRankingDataset(graph_dir=graph_dir, feature_dir=feature_dir,
+                                 projects=projects, out_dir=out_dir,
+                                 embedding_size=self.embedding_size, transform=self.transform,
+                                 pre_transform=self.pre_transform, pre_filter=self.pre_filter)
+
+        return data
