@@ -2,6 +2,7 @@ import ast
 import glob
 import os
 import random
+from collections import Counter
 from os.path import basename, join
 from subprocess import call
 from typing import Tuple, List
@@ -75,11 +76,31 @@ def encode_labels(df: pd.DataFrame) -> pd.DataFrame:
     :param df:
     :return:
     """
-    df['label'] = df['label'].apply(ast.literal_eval).apply(tuple)
-    df['level'] = df['level'].apply(ast.literal_eval).apply(tuple)
+    if df.label.dtype == str:
+        df['label'] = df['label'].apply(ast.literal_eval).apply(tuple)
     labels = list(set(flatten(df['label'].tolist())))
     label_encoder = preprocessing.LabelEncoder()
     label_encoder.fit(labels)
     res = df['label'].apply(lambda x: label_encoder.transform(x))
     df['labels_id'] = res
     return df.copy(deep=True)
+
+
+def only_top_labels(df: pd.DataFrame, top: int = 10) -> pd.DataFrame:
+    """
+    Keeps only the top labels.
+    :param df:
+    :param top:
+    :return:
+    """
+    df.drop('level', axis=1, inplace=True)
+    df['label'] = df['label'].apply(ast.literal_eval).apply(tuple)
+    labels = df['label'].tolist()
+    labels = list(flatten(labels))
+    count = Counter(labels)
+    most_common = [x[0] for x in count.most_common(top)]
+    print(most_common)
+    df['label'] = df['label'].apply(lambda x: [y for y in x if y in most_common])
+    df = df[df['label'].apply(lambda x: len(x) > 0)]
+    df['label'] = df['label'].apply(tuple)
+    return df

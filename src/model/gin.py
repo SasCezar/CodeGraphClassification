@@ -1,7 +1,7 @@
 import pytorch_lightning as pl
 import torch
 import torch.nn.functional as F
-from torch.nn import Sequential, Linear, ReLU
+from torch.nn import Sequential, Linear, ReLU, BCEWithLogitsLoss
 from torch_geometric.nn import GINConv, global_add_pool
 
 
@@ -35,41 +35,40 @@ class SimpleGIN(pl.LightningModule):
         self.fc1 = Linear(dim, dim)
         self.fc2 = Linear(dim, num_classes)
 
-    def forward(self, x, edge_index, batch):
-        x = F.relu(self.conv1(x, edge_index))
+        self.loss = BCEWithLogitsLoss()
+
+    def forward(self, data):
+        x = F.relu(self.conv1(data.x, data.edge_index))
         x = self.bn1(x)
-        x = F.relu(self.conv2(x, edge_index))
+        x = F.relu(self.conv2(x, data.edge_index))
         x = self.bn2(x)
-        x = F.relu(self.conv3(x, edge_index))
+        x = F.relu(self.conv3(x, data.edge_index))
         x = self.bn3(x)
-        x = F.relu(self.conv4(x, edge_index))
+        x = F.relu(self.conv4(x, data.edge_index))
         x = self.bn4(x)
-        x = F.relu(self.conv5(x, edge_index))
+        x = F.relu(self.conv5(x, data.edge_index))
         x = self.bn5(x)
-        x = global_add_pool(x, batch)
+        x = global_add_pool(x, data.batch)
         x = F.relu(self.fc1(x))
         x = F.dropout(x, p=0.5, training=self.training)
         x = self.fc2(x)
         return F.log_softmax(x, dim=-1)
 
     def training_step(self, batch, batch_idx):
-        x, edge_index, batch = batch
-        out = self.forward(x, edge_index, batch)
-        loss = F.nll_loss(out, batch.y)
+        out = self.forward(batch)
+        loss = self.loss(out, batch.y)
         self.log('train/loss', loss)
         return loss
 
     def validation_step(self, batch, batch_idx):
-        x, edge_index, batch = batch
-        out = self.forward(x, edge_index, batch)
-        loss = F.nll_loss(out, batch.y)
+        out = self.forward(batch)
+        loss = self.loss(out, batch.y)
         self.log('val/loss', loss)
         return loss
 
     def test_step(self, batch, batch_idx):
-        x, edge_index, batch = batch
-        out = self.forward(x, edge_index, batch)
-        loss = F.nll_loss(out, batch.y)
+        out = self.forward(batch)
+        loss = self.loss(out, batch.y)
         self.log('test/loss', loss)
         return loss
 

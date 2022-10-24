@@ -5,7 +5,6 @@ from typing import Callable, Optional
 import numpy
 import torch
 import torch_geometric
-from loguru import logger
 from pandas import DataFrame
 from tqdm import tqdm
 
@@ -14,8 +13,9 @@ from data.graph import ArcanGraphLoader
 
 class GitRankingDataset(torch_geometric.data.Dataset):
     def __init__(self, graph_dir: str, feature_dir: str, out_dir: str,
-                 projects: DataFrame, embedding_size: int, transform: Optional[Callable] = None,
-                 pre_transform: Optional[Callable] = None, pre_filter: Optional[Callable] = None):
+                 projects: DataFrame, embedding_size: int, num_classes: int,
+                 transform: Optional[Callable] = None, pre_transform: Optional[Callable] = None,
+                 pre_filter: Optional[Callable] = None):
 
         """
         :param graph_dir: directory containing the graphml files
@@ -36,6 +36,7 @@ class GitRankingDataset(torch_geometric.data.Dataset):
         self.label_id = dict(zip(projects["label"], projects["labels_id"]))
         self.projects_ver_sha = list(zip(self.projects['name'], self.projects['version'], self.projects['sha']))
         self.shared_keys = self.get_shared_keys()
+        self.number_classes = num_classes
         super(GitRankingDataset, self).__init__(out_dir, transform, pre_transform, pre_filter)
 
     def download(self):
@@ -61,8 +62,6 @@ class GitRankingDataset(torch_geometric.data.Dataset):
             if os.path.exists(join(self.graph_dir, project, f"dependency-graph-{version}_{sha}.graphml")) \
                     and os.path.exists(join(self.feature_dir, project, f"dependency-graph-{version}_{sha}.vec")):
                 shared_keys.append((project, version, sha))
-
-        logger.info(f"Found {len(shared_keys)} shared keys")
         return shared_keys
 
     @property
@@ -96,11 +95,20 @@ class GitRankingDataset(torch_geometric.data.Dataset):
 
             label = self.proj_mapping[project]
             label_id = self.label_id[label]
+
+            # OneHot encoding of labels
+            labels_id = torch.tensor(label_id)
+            labels_id = labels_id.unsqueeze(0)
+            target = torch.zeros(labels_id.size(0), self.num_classes).scatter_(1, labels_id, 1.)
+
+            # Building the Data object
             data = torch_geometric.data.Data(x=embeddings,
                                              edge_index=edge_index,
                                              name=project,
                                              version=version,
-                                             y=label_id,
+                                             sha=sha,
+                                             y=target,
+                                             label_id=label_id,
                                              label_text=label)
 
             if self.pre_filter is not None and not self.pre_filter(data):
@@ -147,12 +155,21 @@ class GitRankingDataset(torch_geometric.data.Dataset):
         """
         Return the number of data in the dataset.
         """
+        return self.__len__()
+
+    def __len__(self):
+        """
+        Return the number of data in the dataset.
+        """
         return len(self.shared_keys)
 
     def get(self, idx):
         """
         Get the data object at index idx.
         """
+        return self.__getitem__(idx)
+
+    def __getitem__(self, idx):
         project, version, sha = self.shared_keys[idx]
         data = torch.load(os.path.join(self.processed_dir, f"{project}-{version}_{sha}.pt"))
         return data
@@ -162,7 +179,7 @@ class GitRankingDataset(torch_geometric.data.Dataset):
         """
         Returns the number of classes in the dataset.
         """
-        return len(self.label_id)
+        return self.number_classes
 
     def align(self, graph, features):
         """

@@ -5,7 +5,7 @@ defaults:
   - embedding: fastText
   - local: default
   - dataset: gitranking
-  - model: SimpleGIN
+  - model: GCN
   - datamodule: gitranking
 
 
