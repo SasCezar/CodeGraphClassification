@@ -1,15 +1,13 @@
 import ast
 import glob
 import os
-import random
 from collections import Counter
 from os.path import basename, join
 from subprocess import call
 from typing import Tuple, List
 
-import numpy as np
 import pandas as pd
-import torch
+from loguru import logger
 from more_itertools import flatten
 from sklearn import preprocessing
 
@@ -67,6 +65,7 @@ def get_versions(project: str, arcan_out: str) -> List[Tuple[str, str]]:
     for file in files:
         num, sha = file.replace('.graphml', '').split("-")[-1].split("_")
         res.append((num, sha))
+    res.sort(key=lambda x: int(x[0]))
     return res
 
 
@@ -94,13 +93,18 @@ def only_top_labels(df: pd.DataFrame, top: int = 10) -> pd.DataFrame:
     :return:
     """
     df.drop('level', axis=1, inplace=True)
-    df['label'] = df['label'].apply(ast.literal_eval).apply(tuple)
-    labels = df['label'].tolist()
+    labels = df['label'].apply(ast.literal_eval).apply(tuple).tolist()
     labels = list(flatten(labels))
     count = Counter(labels)
     most_common = [x[0] for x in count.most_common(top)]
-    print(most_common)
-    df['label'] = df['label'].apply(lambda x: [y for y in x if y in most_common])
+    df = filter_by_label(df, most_common)
+    return df
+
+
+def filter_by_label(df, labels):
+    logger.info(f"Labels {labels}")
+    df['label'] = df['label'].apply(ast.literal_eval).apply(tuple)
+    df['label'] = df['label'].apply(lambda x: [y for y in x if y in labels])
     df = df[df['label'].apply(lambda x: len(x) > 0)]
     df['label'] = df['label'].apply(tuple)
     return df

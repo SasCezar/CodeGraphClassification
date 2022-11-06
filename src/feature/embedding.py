@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 
 import fasttext as ft
 import numpy
+import numpy as np
 import spacy
 from gensim.models import KeyedVectors
 
@@ -70,7 +71,7 @@ class W2VEmbedding(AbstractEmbeddingModel):
     def __init__(self, path: str, model: str = 'W2V-Unk'):
         super().__init__()
         self._name = f'{model}'
-        self.model = KeyedVectors.load_word2vec_format(path)
+        self.model = KeyedVectors.load_word2vec_format(path, binary=True)
 
     def get_embedding(self, text: str) -> numpy.ndarray:
         """
@@ -78,5 +79,10 @@ class W2VEmbedding(AbstractEmbeddingModel):
         :param text:
         :return:
         """
-        embeddings = [self.model.get_vector(x) for x in text.split(' ') if x in self.model]
+        embeddings = []
+        for word in text.split():
+            if word in self.model:
+                embeddings.append(self.model[word])
+            else:
+                embeddings.append(np.zeros(self.model.vector_size))
         return numpy.mean(embeddings, axis=0)

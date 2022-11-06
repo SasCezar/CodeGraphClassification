@@ -1,10 +1,12 @@
+from os.path import join
+
 import hydra
 import pandas as pd
 from hydra.utils import instantiate
 from loguru import logger
 from omegaconf import DictConfig
 
-from utils import git_clone, get_versions
+from utils import git_clone, get_versions, git_checkout
 
 
 @hydra.main(config_path="../conf", config_name="main", version_base="1.2")
@@ -38,6 +40,8 @@ def extract_embeddings(cfg: DictConfig):
         logger.info(f"Found {len(versions)} versions for project {project}")
         for num, sha in versions:
             try:
+                if extraction.clone:
+                    git_checkout(join(cfg.repositories_path, project_name), sha)
                 extraction.extract(project_name, sha=sha, num=num)
             except Exception as e:
                 logger.error(f"Failed to extract features for {project} {num} {sha}")
