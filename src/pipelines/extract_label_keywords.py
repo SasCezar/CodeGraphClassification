@@ -1,50 +1,37 @@
 import ast
+import csv
+import os
 from collections import Counter
 from os.path import join
 
 import hydra
 import pandas as pd
-import yake
-from RAKE import Rake
+from hydra.utils import instantiate
 from more_itertools import flatten
 from omegaconf import DictConfig
-from sklearn.metrics.pairwise import cosine_similarity
 from tqdm import tqdm
 
-from feature.content import NameContentExtraction
-from feature.embedding import FastTextEmbedding, W2VEmbedding
+from feature.content import ContentExtraction
+from feature.keyword_extraction import AbstractKeywordExtraction
 from utils import git_clone, get_versions, git_checkout, filter_by_label
 
 
-@hydra.main(config_path="../conf", config_name="main", version_base="1.2")
+@hydra.main(config_path="../conf", config_name="keyword_extraction", version_base="1.2")
 def extract_label_keyword(cfg: DictConfig):
     """
-    Extracts features from a project including the git history (augmented data).
+    Extracts the keywords of the labels using the projects of that label and the git history (augmented data).
     :param cfg:
     :return:
     """
 
-    projects = pd.read_csv("/home/sasce/PycharmProjects/CodeGraphClassification/data/raw/dataset_with_graphs.csv")
+    projects = pd.read_csv(cfg.project_path)
 
     labels = projects['label'].apply(ast.literal_eval).apply(tuple).tolist()
     labels = list(set(flatten(labels)))
 
-    content_extractor = NameContentExtraction(graph_path=cfg.arcan_graphs)
+    content_extractor: ContentExtraction = instantiate(cfg.content)
 
-    #ft = FastTextEmbedding(path='/home/sasce/PycharmProjects/CodeGraphClassification/data/models/wiki.en.bin',
-    #                       model='fastText')
-
-    ft = W2VEmbedding(path='/home/sasce/PycharmProjects/CodeGraphClassification/data/models/SO_vectors_200.bin',
-                        model='w2v')
-    with open("/home/sasce/PycharmProjects/CodeGraphClassification/data/raw/java_stopwords", 'rt') as inf:
-        java_stopwords = {x.strip() for x in inf.readlines()}
-
-    # java_stopwords.update(['get', 'set', 'org', 'com', 'exception', 'override', 'java', 'string',
-    #                        'list', 'util', 'value', 'length', 'println'])
-
-    kw_extractor = yake.KeywordExtractor(n=1, stopwords=java_stopwords, top=50)
-
-    #rake = Rake("/home/sasce/PycharmProjects/CodeGraphClassification/data/raw/java_stopwords")
+    kw_extractor: AbstractKeywordExtraction = instantiate(cfg.keyword)
 
     for label in tqdm(labels):
         projects_label = filter_by_label(projects.copy(deep=True), [label])
@@ -65,7 +52,7 @@ def extract_label_keyword(cfg: DictConfig):
                 try:
                     if content_extractor.clone:
                         git_checkout(join(cfg.repositories_path, project_name), sha)
-                    res = content_extractor.extract(project_name, sha, num)
+                    res = [x[1] for x in content_extractor.extract(project_name, sha, num)]
                     identifiers.append(res)
                 except:
                     continue
@@ -77,36 +64,18 @@ def extract_label_keyword(cfg: DictConfig):
             # shutil.rmtree(repo_path, ignore_errors=True)
 
         extracted_kw = {}
-
-        for project in content:
-            extracted_kw[project] = kw_extractor.extract_keywords(" ".join(content[project]).lower().strip())
-            #extracted_kw[project] = rake.run(" ".join(content[project]).lower().strip(), minCharacters=3, maxWords=1,
-            #                                 minFrequency=1)
-
         counter = Counter()
-        all_terms = set()
-        for p in extracted_kw:
-            terms = [x[0] for x in extracted_kw[p]]
-            all_terms.update(terms)
+        for project in content:
+            extracted_kw[project] = kw_extractor.get_keywords(" ".join(content[project]).lower().strip())
+            terms = [x[0] for x in extracted_kw[project]]
             counter.update(terms)
 
-        label_emb = [ft.get_embedding(label)]
-        keywords = [x[0] for x in counter.most_common()]
+        triple = [(x[0], counter[x[0]], term_count[x[0]]) for x in counter.most_common()]
+        df = pd.DataFrame(triple, columns=['keyword', 'doc_freq', 'total_freq'])
 
-        similarities = []
-        for i, key in tqdm(enumerate(keywords)):
-            tokvecs = [ft.get_embedding(key)]
-            sim = cosine_similarity(tokvecs, label_emb)[0][0]
-            similarities.append((keywords[i], sim))
-
-        similarities.sort(key=lambda x: -x[1])
-
-        triples = [(x[0], x[1], term_count[x[0]]) for x in similarities]
-
-        df = pd.DataFrame(triples, columns=['keyword', 'similarity', 'frequency'])
-
-        df.to_csv(f"/home/sasce/PycharmProjects/CodeGraphClassification/data/processed/keywords/SO/rake/all/{label}.csv",
-                  index=False)
+        out_path = f"{cfg.keywords_out}/{kw_extractor.name}/all/"
+        os.makedirs(out_path, exist_ok=True)
+        df.to_csv(os.path.join(out_path, f"{label}.csv"), index=False, quoting=csv.QUOTE_NONNUMERIC)
 
 
 if __name__ == '__main__':

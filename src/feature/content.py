@@ -1,15 +1,10 @@
 import os
 import re
 from abc import abstractmethod, ABC
-
-import simplemma
-import sourcy
 from typing import Iterable
 
-import spacy
-
 import igraph
-import wordninja
+import sourcy
 from more_itertools import flatten
 
 from data.graph import ArcanGraphLoader
@@ -93,7 +88,7 @@ class NameContentExtraction(ContentExtraction):
             if not clean:
                 clean = name
 
-            yield clean
+            yield node['filePathRelative'], clean
 
     def name_to_sentence(self, name: str):
         tokens = name.split(".")[-2:]
@@ -137,7 +132,7 @@ class IdentifiersContentExtraction(ContentExtraction):
 
             identifiers = self.get_identifiers(path)
             text = " ".join(identifiers)
-            yield text
+            yield node['filePathRelative'], text
 
     @staticmethod
     def read_file(filename: str):
@@ -198,7 +193,7 @@ class CommentsContentExtraction(ContentExtraction):
 
             identifiers = self.get_identifiers(path)
             text = " ".join(identifiers)
-            yield text
+            yield node['filePathRelative'], text
 
     @staticmethod
     def read_file(filename: str):

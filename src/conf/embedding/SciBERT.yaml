@@ -1,0 +1,3 @@
+_target_: src.feature.embedding.HuggingFaceEmbedding
+name: SciBERT
+model: ${base_path}/data/models/scibert_scivocab_uncased

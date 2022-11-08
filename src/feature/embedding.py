@@ -4,7 +4,9 @@ import fasttext as ft
 import numpy
 import numpy as np
 import spacy
+import torch
 from gensim.models import KeyedVectors
+from transformers import BertModel, BertTokenizer
 
 
 class AbstractEmbeddingModel(ABC):
@@ -80,9 +82,33 @@ class W2VEmbedding(AbstractEmbeddingModel):
         :return:
         """
         embeddings = []
-        for word in text.split():
+        for word in str(text).split():
             if word in self.model:
                 embeddings.append(self.model[word])
             else:
                 embeddings.append(np.zeros(self.model.vector_size))
         return numpy.mean(embeddings, axis=0)
+
+
+class HuggingFaceEmbedding(AbstractEmbeddingModel):
+    """
+    Class for embedding models using HuggingFace.
+    """
+
+    def __init__(self, name, model):
+        super().__init__()
+        self._name = f'{name}'
+        do_lower_case = True
+        self.model = BertModel.from_pretrained(model)
+        self.tokenizer = BertTokenizer.from_pretrained(model, do_lower_case=do_lower_case)
+
+    def get_embedding(self, text: str) -> numpy.ndarray:
+        """
+        Returns the embedding of the text.
+        :param text:
+        :return:
+        """
+        input_ids = torch.tensor(self.tokenizer.encode(text)).unsqueeze(0)  # Batch size 1
+        outputs = self.model(input_ids)
+        last_hidden_states = outputs[0]  # The last hidden-state is the first element of the output tuple
+        return last_hidden_states.mean(1).detach().numpy()[0]

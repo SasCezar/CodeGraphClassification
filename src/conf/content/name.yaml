@@ -1,0 +1,3 @@
+_target_: src.feature.content.NameContentExtraction
+graph_path: ${arcan_graphs}
+stopwords: None
