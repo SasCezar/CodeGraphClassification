@@ -7,6 +7,7 @@ from os.path import join
 import hydra
 import pandas as pd
 from hydra.utils import instantiate
+from loguru import logger
 from more_itertools import flatten
 from omegaconf import DictConfig
 from tqdm import tqdm
@@ -28,10 +29,13 @@ def extract_label_keyword(cfg: DictConfig):
 
     labels = projects['label'].apply(ast.literal_eval).apply(tuple).tolist()
     labels = list(set(flatten(labels)))
+    labels = ['static program analysis tool', 'static program analysis', 'machine learning', 'RNA sequencing']
 
     content_extractor: ContentExtraction = instantiate(cfg.content)
 
     kw_extractor: AbstractKeywordExtraction = instantiate(cfg.keyword)
+
+    skip_projects = ['Waikato|weka-3.8', 'SonarSource|sonar-java', 'GenomicParisCentre|eoulsan']
 
     for label in tqdm(labels):
         projects_label = filter_by_label(projects.copy(deep=True), [label])
@@ -40,6 +44,9 @@ def extract_label_keyword(cfg: DictConfig):
         identifiers = []
         content = {}
         for project_name in projects_label:
+            if project_name in skip_projects:
+                logger.info(f"Skipping {project_name}")
+                continue
             project = project_name.replace('|', '/')
 
             project_url = f'https://github.com/{project}'
@@ -47,7 +54,7 @@ def extract_label_keyword(cfg: DictConfig):
                 git_clone(project_url, project_name, cfg.repositories_path)
 
             versions = get_versions(project_name, cfg.arcan_graphs)
-
+            logger.info(f"Found {len(versions)} versions for {project_name}")
             for num, sha in versions:
                 try:
                     if content_extractor.clone:
@@ -66,6 +73,7 @@ def extract_label_keyword(cfg: DictConfig):
         extracted_kw = {}
         counter = Counter()
         for project in content:
+            logger.info(f"Extracting keywords for {project}")
             extracted_kw[project] = kw_extractor.get_keywords(" ".join(content[project]).lower().strip())
             terms = [x[0] for x in extracted_kw[project]]
             counter.update(terms)
@@ -73,7 +81,7 @@ def extract_label_keyword(cfg: DictConfig):
         triple = [(x[0], counter[x[0]], term_count[x[0]]) for x in counter.most_common()]
         df = pd.DataFrame(triple, columns=['keyword', 'doc_freq', 'total_freq'])
 
-        out_path = f"{cfg.keywords_out}/{kw_extractor.name}/all/"
+        out_path = f"{cfg.keywords_out}/{kw_extractor.name}/paper/"
         os.makedirs(out_path, exist_ok=True)
         df.to_csv(os.path.join(out_path, f"{label}.csv"), index=False, quoting=csv.QUOTE_NONNUMERIC)
 

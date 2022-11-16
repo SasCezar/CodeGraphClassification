@@ -4,8 +4,9 @@ import os
 from collections import Counter
 from os.path import basename, join
 from subprocess import call
-from typing import Tuple, List
+from typing import Tuple, List, Dict
 
+import igraph
 import pandas as pd
 from loguru import logger
 from more_itertools import flatten
@@ -108,3 +109,17 @@ def filter_by_label(df, labels):
     df = df[df['label'].apply(lambda x: len(x) > 0)]
     df['label'] = df['label'].apply(tuple)
     return df
+
+
+def node_package_mapping(graph: igraph.Graph) -> Dict[str, str]:
+    """
+    Returns a dictionary mapping node ids to package names.
+    :param graph:
+    :return:
+    """
+    res = {}
+    for edge in graph.es:
+        v1, v2 = edge.source, edge.target
+        if v1['labelV'] == 'container':
+            res[v1['filePathRelative']] = v2['filePathRelative']
+    return res

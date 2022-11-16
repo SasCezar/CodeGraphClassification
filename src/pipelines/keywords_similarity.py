@@ -32,7 +32,7 @@ def keyword_similarity(cfg: DictConfig):
         try:
             path = f'{cfg.keywords_out}/{kw_extractor.name}/similarity/{label}.csv'
             if not os.path.exists(path) or cfg.force_new:
-                path = f'{cfg.keywords_out}/{kw_extractor.name}/all/{label}.csv'
+                path = f'{cfg.keywords_out}/{kw_extractor.name}/paper/{label}.csv'
             keywords_df = pd.read_csv(path, dtype={0: str, 1: int})
         except:
             continue

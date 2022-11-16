@@ -11,7 +11,10 @@ import pandas as pd
 from hydra.utils import instantiate
 from loguru import logger
 from multiset import Multiset
+from numpy import exp
 from omegaconf import DictConfig
+from scipy.spatial.distance import jensenshannon
+from scipy.stats import entropy
 
 from utils import git_clone, get_versions, git_checkout
 
@@ -27,16 +30,33 @@ def compute_node_labels(project_content: Dict[str, str], keywords: Dict[str, Mul
     :return: The weighted product of the keywords of the labels of a project.
     """
     node_labels = {}
+    skipped = 0
+    unannoteted = {}
+    uniform_vec = np.ones(len(label_mapping)) / len(label_mapping)
     for node, content in project_content.items():
         node_labels[node] = np.zeros(len(label_mapping))
         for label, kw in keywords.items():
             intersection = list(kw.intersection(Multiset(content.split())))
             intersection = Counter(intersection)
-            node_labels[node][label_mapping[label]] = sum([intersection[k] * weights[label][k] for k in intersection.keys()])
-        #node_labels[node] = list(node_labels[node] / np.linalg.norm(node_labels[node]))
+            node_labels[node][label_mapping[label]] = sum(
+                [intersection[k] * weights[label][k] for k in intersection.keys()])
+        # node_labels[node] = list(node_labels[node] / np.linalg.norm(node_labels[node]))
         norm = np.sum(node_labels[node])
-        node_labels[node] = list(node_labels[node] / norm) if norm > 0 else list(node_labels[node])
-    return node_labels
+        node_vec = node_labels[node] / norm if norm > 0 else uniform_vec
+        if norm == 0:
+            node_vec = np.zeros(len(label_mapping))
+        # print(1 - exp(-entropy(node_labels[node], uniform_vec)))
+        if jensenshannon(node_labels[node], uniform_vec) <= 0.5:
+            node_vec = np.zeros(len(label_mapping))
+            skipped += 1
+            unannoteted[node] = 1
+
+        node_labels[node] = node_vec.tolist()
+    print("total", len(project_content))
+    print("skipped", skipped)
+    print("percentage", skipped / len(project_content))
+
+    return node_labels, unannoteted
 
 
 @hydra.main(config_path="../conf", config_name="keyword_extraction", version_base="1.2")
@@ -55,7 +75,7 @@ def node_annotation(cfg: DictConfig):
 
     projects = ['Waikato/weka-3.8', 'SonarSource/sonar-java', 'GenomicParisCentre/eoulsan']
     # projects = ['PolaricServer/aprsd']
-    #projects = ['SonarSource/sonar-java'] #, 'SonarSource/sonar-java', 'GenomicParisCentre/eoulsan']
+    # projects = ['SonarSource/sonar-java'] #, 'SonarSource/sonar-java', 'GenomicParisCentre/eoulsan']
 
     logger.info(f"Extracting features for {len(projects)} projects")
 
@@ -93,12 +113,16 @@ def node_annotation(cfg: DictConfig):
                 if content_extractor.clone:
                     git_checkout(join(cfg.repositories_path, project_name), sha)
                 project_content = dict(content_extractor.extract(project_name, sha, num))
-                labels = compute_node_labels(project_content, keywords, weights, label_mapping)
-                out_path = join(cfg.annotations_path, content_extractor.method, f"{project_name}-{num}-{sha}.json")
-                df_out_path = join(cfg.annotations_path, content_extractor.method, f"{project_name}-{num}-{sha}.csv")
+                labels, unannoteted = compute_node_labels(project_content, keywords, weights, label_mapping)
+                out_path = join(cfg.annotations_path, 'kl', content_extractor.method, f"{project_name}-{num}-{sha}.json")
+                unannoteted_out_path = join(cfg.annotations_path, 'kl', content_extractor.method, f"unnanotated_{project_name}-{num}-{sha}.json")
+                df_out_path = join(cfg.annotations_path, 'kl', content_extractor.method,
+                                   f"{project_name}-{num}-{sha}.csv")
                 Path(out_path).parent.mkdir(parents=True, exist_ok=True)
                 with open(out_path, 'w') as f:
                     json.dump(labels, f, ensure_ascii=False)
+                with open(unannoteted_out_path, 'w') as f:
+                    json.dump(unannoteted, f, ensure_ascii=False)
                 df = pandas.DataFrame.from_dict(labels, orient='index', columns=[i for i in range(len(inverse_map))])
                 df.reset_index(inplace=True)
                 df.rename(columns={'index': 'node'}, inplace=True)

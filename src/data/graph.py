@@ -23,7 +23,7 @@ class ArcanGraphLoader(GraphLoader):
 
     def _clean_graph(self, graph: igraph.Graph) -> igraph.Graph:
         graph.es['weight'] = graph.es['Weight']
-        delete = [x.index for x in graph.vs if "$" in x['name']]
+        delete = [x.index for x in graph.vs if "$" in x['name'] and x['labelV'] != 'container']
         graph.delete_vertices(delete)
         for edge_label in self.clean_edges:
             graph.es.select(labelE=edge_label).delete()

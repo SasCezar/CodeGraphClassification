@@ -8,7 +8,7 @@ from more_itertools import flatten
 
 
 def compute_keywords_tfidf():
-    keywords_path = Path("/home/sasce/PycharmProjects/CodeGraphClassification/data/processed/keywords/yake/all")
+    keywords_path = Path("/home/sasce/PycharmProjects/CodeGraphClassification/data/processed/keywords/yake/paper")
 
     keywords_files = list(keywords_path.glob("*.csv"))
     labels = []
