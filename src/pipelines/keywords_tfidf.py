@@ -1,14 +1,18 @@
+from os.path import join
 from pathlib import Path
 
+import hydra
 import numpy as np
-import pandas
+import pandas as pd
 from gensim import corpora, models
 from loguru import logger
 from more_itertools import flatten
+from omegaconf import DictConfig
 
 
-def compute_keywords_tfidf():
-    keywords_path = Path("/home/sasce/PycharmProjects/CodeGraphClassification/data/processed/keywords/yake/paper")
+@hydra.main(config_path="../conf", config_name="keyword_extraction", version_base="1.2")
+def keywords_tfidf(cfg: DictConfig):
+    keywords_path = Path(cfg.keywords_dir)
 
     keywords_files = list(keywords_path.glob("*.csv"))
     labels = []
@@ -16,7 +20,7 @@ def compute_keywords_tfidf():
     for keywords_file in keywords_files:
         label = keywords_file.stem
         labels.append(label)
-        df = pandas.read_csv(keywords_file)
+        df = pd.read_csv(keywords_file)
         try:
             df.drop('similarity', axis=1, inplace=True)
         except:
@@ -25,8 +29,6 @@ def compute_keywords_tfidf():
 
         doc_tokenized.append(list(flatten([[str(term)] * n for term, _, n in terms])))
 
-    # logger.info(f"Tokeinzing {len(docs)} documents")
-    # doc_tokenized = [simple_preprocess(doc) for doc in docs]
     logger.info(f"Creating dictionary")
     dictionary = corpora.Dictionary()
     BoW_corpus = [dictionary.doc2bow(doc, allow_update=True) for doc in doc_tokenized]
@@ -40,12 +42,11 @@ def compute_keywords_tfidf():
 
     for i, keywords_file in enumerate(keywords_files):
         label = keywords_file.stem
-        df = pandas.read_csv(keywords_file)
+        df = pd.read_csv(keywords_file)
         df['tfidf'] = df['keyword'].map(label_terms_tfidf[i])
-        df.to_csv(
-            f"/home/sasce/PycharmProjects/CodeGraphClassification/data/processed/keywords/yake/similarity/{label}.csv",
-            index=False)
+        df.to_csv(join(cfg.keywords_dir, "similarity", f"{label}.csv"),
+                  index=False)
 
 
 if __name__ == '__main__':
-    compute_keywords_tfidf()
+    keywords_tfidf()

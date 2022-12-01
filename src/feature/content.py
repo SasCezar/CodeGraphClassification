@@ -85,17 +85,14 @@ class NameContentExtraction(ContentExtraction):
             name = node['name']
             clean = self.name_to_sentence(name)
 
-            if not clean:
-                clean = name
-
             yield node['filePathRelative'], clean
 
     def name_to_sentence(self, name: str):
         tokens = name.split(".")
-        if len(tokens) > 2:
-            tokens = tokens[2:]
-        clean = []
 
+        tokens = tokens[3:] if len(tokens) > 3 else []
+
+        clean = []
         for token in tokens:
             clean.extend(self.split_camel(token))
 

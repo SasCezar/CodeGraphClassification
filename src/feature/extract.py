@@ -117,7 +117,8 @@ class NameFeatureExtraction(FeatureExtraction):
             yield name, clean, embedding
 
     def name_to_sentence(self, name: str):
-        tokens = name.split(".")[2:]
+        tokens = name.split(".")
+        tokens = tokens[3:] if len(tokens) > 3 else ""
         clean = []
 
         for token in tokens:

@@ -11,13 +11,13 @@ defaults:
   - override hydra/job_logging: colorlog
 
 
-num_workers: 1
+num_workers: 8
 
-annotations_path: ${base_path}/data/processed/annotations/
 
 force_new: False
 seed: 42
 
-content_dir: ${base_path}/data/processed/content/${content.name}
 project_path: ${base_path}/data/raw/dataset_with_graphs.csv
-keywords_path: ${base_path}/data/processed/keywords/test/${content.name}/${keyword.name}
+content_dir: ${base_path}/data/processed/content/${content.name}
+keywords_dir: ${base_path}/data/processed/keywords/${content.name}/${keyword.name}
+annotations_path: ${base_path}/data/processed/annotations/${content.name}/

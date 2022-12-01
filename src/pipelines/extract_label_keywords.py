@@ -1,13 +1,14 @@
 import ast
 import csv
 import json
-import os
 from collections import Counter, defaultdict
+from os import makedirs
 from os.path import join
 
 import hydra
 import pandas as pd
 from hydra.utils import instantiate
+from joblib import Parallel, delayed
 from more_itertools import flatten
 from omegaconf import DictConfig
 from tqdm import tqdm
@@ -18,16 +19,31 @@ from utils import filter_by_label
 
 def extract_keywords(projects, cfg):
     project_keywords = {}
-    kw_extractor: AbstractKeywordExtraction = instantiate(cfg.keyword.cls)
+
     term_freq = defaultdict(Counter)
-    for project_name in tqdm(projects):
-        content = load_content(join(cfg.content_dir, f"{project_name}.json"))
-        term_freq[project_name].update(content)
-        text = [" ".join(x).replace(".", " ") for x in content]
-        keywords = kw_extractor.get_keywords(" ".join(text))
-        project_keywords[project_name] = keywords
+    if cfg.num_workers > 1:
+        with Parallel(n_jobs=cfg.num_workers) as parallel:
+            results = parallel(delayed(extract_kw)(cfg, project) for project in tqdm(projects))
+            for project, content_count, keywords in results:
+                term_freq[project].update(content_count)
+                project_keywords[project] = keywords
+    else:
+        for project_name in tqdm(projects):
+            project, content_count, keywords = extract_kw(cfg, project_name)
+            term_freq[project].update(content_count)
+            project_keywords[project] = keywords
 
     return project_keywords, term_freq
+
+
+def extract_kw(cfg, project_name):
+    kw_extractor: AbstractKeywordExtraction = instantiate(cfg.keyword.cls)
+    content = load_content(join(cfg.content_dir, f"{project_name}.json"))
+    text = " ".join(content)
+    tokens = text.split(" ")
+    keywords = [x[0] for x in kw_extractor.get_keywords(text)]
+    content_count = Counter(tokens)
+    return project_name, content_count, keywords
 
 
 def load_content(content_path):
@@ -47,8 +63,8 @@ def extract_label_keyword(cfg: DictConfig):
     :return:
     """
 
-    projects = pd.read_csv(cfg.project_path)
-    #skip_projects = ['Waikato|weka-3.8', 'SonarSource|sonar-java', 'GenomicParisCentre|eoulsan']
+    projects = pd.read_csv(cfg.project_path)  # .head(1000)
+    # skip_projects = ['Waikato|weka-3.8', 'SonarSource|sonar-java', 'GenomicParisCentre|eoulsan']
     skip_projects = []
 
     projects_keyword, term_freq = extract_keywords(set(projects['name'].tolist()), cfg)
@@ -74,8 +90,8 @@ def extract_label_keyword(cfg: DictConfig):
         triple = [(x[0], counter[x[0]], term_count[x[0]]) for x in counter.most_common()]
         df = pd.DataFrame(triple, columns=['keyword', 'doc_freq', 'total_freq'])
 
-        os.makedirs(cfg.keywords_path, exist_ok=True)
-        df.to_csv(os.path.join(cfg.keywords_path, f"{label}.csv"), index=False, quoting=csv.QUOTE_NONNUMERIC)
+        makedirs(cfg.keywords_dir, exist_ok=True)
+        df.to_csv(join(cfg.keywords_dir, f"{label}.csv"), index=False, quoting=csv.QUOTE_NONNUMERIC)
 
 
 if __name__ == '__main__':
