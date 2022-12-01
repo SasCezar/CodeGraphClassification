@@ -1,4 +1,6 @@
-_target_: src.feature.extract.NameFeatureExtraction
-graph_path: ${arcan_graphs}
-out_path: ${out_path}/processed/
-stopwords: None
+name: name
+cls:
+  _target_: src.feature.extract.NameFeatureExtraction
+  graph_path: ${arcan_graphs}
+  out_path: ${out_path}/processed/
+  stopwords: None

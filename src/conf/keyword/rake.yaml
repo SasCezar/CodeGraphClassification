@@ -1,5 +1,7 @@
-_target_: src.feature.keyword_extraction.RAKEKeywordExtraction
-stopwords_path: ${base_path}/data/raw/java_stopwords.txt
-minCharacters: 3
-maxWords: 1
-minFrequency: 1
+name: rake
+cls:
+  _target_: src.feature.keyword_extraction.RAKEKeywordExtraction
+  stopwords_path: ${base_path}/data/raw/java_stopwords.txt
+  minCharacters: 3
+  maxWords: 1
+  minFrequency: 1

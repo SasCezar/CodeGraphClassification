@@ -16,9 +16,9 @@ def extract_embeddings(cfg: DictConfig):
     :param cfg:
     :return:
     """
-    embedding = instantiate(cfg.embedding)
+    embedding = instantiate(cfg.embedding.cls)
 
-    extraction = instantiate(cfg.extraction, model=embedding)
+    extraction = instantiate(cfg.extraction.cls, model=embedding)
 
     projects = pd.read_csv(cfg.dataset)
 

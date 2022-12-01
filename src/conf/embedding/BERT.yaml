@@ -1,2 +1,4 @@
-_target_: src.feature.embedding.BERTEmbedding
-model: en_core_web_trf
+name: BERT
+cls:
+  _target_: src.feature.embedding.BERTEmbedding
+  model: en_core_web_trf

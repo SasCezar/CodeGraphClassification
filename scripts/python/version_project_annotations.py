@@ -8,8 +8,8 @@ from hydra import initialize, compose
 with initialize(version_base=None, config_path="../../src/conf/"):
     cfg = compose(config_name='keyword_extraction.yaml', overrides=["local=default"])
 
-projects = sorted(glob.glob("/home/sasce/PycharmProjects/CodeGraphClassification/data/processed/annotations/name/*sonar-java*.csv"), key=lambda x: int(x.split('-')[-2]))
-method = 'identifiers'
+projects = sorted(glob.glob("/home/sasce/PycharmProjects/CodeGraphClassification/data/processed/annotations/name/*weka*.csv"), key=lambda x: int(x.split('-')[-2]))
+method = 'name'
 
 with open(f"/home/sasce/PycharmProjects/CodeGraphClassification/data/processed/annotations/{method}/label_mapping.json",
           'rt') as inf:
@@ -28,5 +28,5 @@ for p, i, m in proj_mean:
     proj_labs.extend([[p, i]] * int(m * 100))
 mean_df = pandas.DataFrame(proj_labs, columns=['project', 'label', ])
 mean_df.to_csv(
-    f"/home/sasce/PycharmProjects/CodeGraphClassification/data/processed/sonar-java_versions.csv",
+    f"/home/sasce/PycharmProjects/CodeGraphClassification/data/processed/weka-java_versions.csv",
     index=False, header=True)

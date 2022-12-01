@@ -1,4 +1,6 @@
-_target_: src.feature.content.IdentifiersContentExtraction
-graph_path: ${arcan_graphs}
-stopwords: None
-repo_path: ${base_path}/data/raw/repositories/
+name: identifiers
+cls:
+  _target_: src.feature.content.IdentifiersContentExtraction
+  graph_path: ${arcan_graphs}
+  stopwords: None
+  repo_path: ${base_path}/data/raw/repositories/

@@ -18,5 +18,6 @@ annotations_path: ${base_path}/data/processed/annotations/
 force_new: False
 seed: 42
 
+content_dir: ${base_path}/data/processed/content/${content.name}
 project_path: ${base_path}/data/raw/dataset_with_graphs.csv
-keywords_out: ${base_path}/data/processed/keywords
+keywords_path: ${base_path}/data/processed/keywords/test/${content.name}/${keyword.name}

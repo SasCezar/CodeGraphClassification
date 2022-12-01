@@ -91,17 +91,13 @@ class NameContentExtraction(ContentExtraction):
             yield node['filePathRelative'], clean
 
     def name_to_sentence(self, name: str):
-        tokens = name.split(".")[-2:]
+        tokens = name.split(".")
+        if len(tokens) > 2:
+            tokens = tokens[2:]
         clean = []
 
         for token in tokens:
             clean.extend(self.split_camel(token))
-
-        #final = []
-        #for x in clean:
-            #splitted = wordninja.split(x) if len(x) > 10 else [x]
-            #lemmatized = [simplemma.lemmatize(token, lang='en') for token in splitted]
-            #final.extend(lemmatized)
 
         return " ".join(clean).lower()
 

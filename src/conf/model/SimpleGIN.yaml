@@ -1,1 +1,3 @@
-_target_: src.model.gin.SimpleGIN
+name: rake
+cls:
+  _target_: src.model.gin.SimpleGIN

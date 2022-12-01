@@ -25,8 +25,8 @@ def keyword_similarity(cfg: DictConfig):
 
     labels = projects['label'].apply(ast.literal_eval).apply(tuple).tolist()
     labels = list(set(flatten(labels)))
-    embedding_model: AbstractEmbeddingModel = instantiate(cfg.embedding)
-    kw_extractor: AbstractKeywordExtraction = instantiate(cfg.keyword)
+    embedding_model: AbstractEmbeddingModel = instantiate(cfg.embedding.cls)
+    kw_extractor: AbstractKeywordExtraction = instantiate(cfg.keyword.cls)
 
     for label in tqdm(labels):
         try:

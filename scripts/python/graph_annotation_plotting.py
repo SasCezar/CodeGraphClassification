@@ -26,15 +26,15 @@ def random_node(graph):
             return n
 
 
-def annotate_subgraph(subgraph, node_annotations, top_k_labels, label_map, unannotated):
+def annotate_subgraph(subgraph, node_annotations, top_k_labels, label_map):
     for n in subgraph.vs:
         tot = 0
-        if n['filePathRelative'] in unannotated:
+        if node_annotations[n['filePathRelative']]['unannotated']:
             n['Unannotated'] = 1
             continue
         for l in top_k_labels:
-            n[label_map[str(l)]] = node_annotations[n['filePathRelative']][l]
-            tot += node_annotations[n['filePathRelative']][l]
+            n[label_map[str(l)]] = node_annotations[n['filePathRelative']]['distribution'][l]
+            tot += node_annotations[n['filePathRelative']]['distribution'][l]
         n['Other'] = 1 - tot
     return subgraph
 
@@ -50,7 +50,7 @@ def best_node(graph, node_annotations, top_label):
     for n in graph.vs:
         if n['filePathRelative'] in node_annotations:
             score = node_annotations[n['filePathRelative']][top_label]
-            if score > best_score and score < 0.75:
+            if best_score < score < 0.75:
                 best_score = score
                 best_node = n.index
     print(best_score)
@@ -62,7 +62,6 @@ def export_for_r():
     project_graph_path = "/home/sasce/PycharmProjects/CodeGraphClassification/data/interim/arcanOutput/Waikato|weka-3.8/dependency-graph-903_04804ccd6dff03534cbf3f2a71a35c73eef24fe8.graphml"
     project_annotation_path = "/home/sasce/PycharmProjects/CodeGraphClassification/data/processed/annotations/kl/name/Waikato|weka-3.8-903-04804ccd6dff03534cbf3f2a71a35c73eef24fe8.csv"
     label_mapping_path = "/home/sasce/PycharmProjects/CodeGraphClassification/data/processed/annotations/name/label_mapping.json"
-    unannotated_path = "/home/sasce/PycharmProjects/CodeGraphClassification/data/processed/annotations/kl/name/unnanotated_Waikato|weka-3.8-903-04804ccd6dff03534cbf3f2a71a35c73eef24fe8.json"
 
     k = 5
 
@@ -71,17 +70,16 @@ def export_for_r():
     top_k = sorted(range(len(project_labels)), key=lambda i: -project_labels[i])[:k]
     node_annotations = load_node_annotations(project_annotation_path)
     graph = ArcanGraphLoader(clean=True).load(project_graph_path)
-    initial_node = best_node(graph, node_annotations, top_k[0]) #1933# random_node(graph)
+    initial_node = random_node(graph)
     neighbor = graph.neighborhood([initial_node], 1)[0][0]
     subgraph_vertices = graph.neighborhood([initial_node, neighbor], 1)[0]
     subgraph = igraph.Graph.subgraph(graph, subgraph_vertices)
 
     with open(label_mapping_path, 'rt') as inf:
         label_map = json.load(inf)
-    with open(unannotated_path, 'rt') as inf:
-        unannotated = json.load(inf)
+
     print(initial_node)
-    subgraph = annotate_subgraph(subgraph, node_annotations, top_k, label_map, unannotated)
+    subgraph = annotate_subgraph(subgraph, node_annotations, top_k, label_map)
     igraph.Graph.write_gml(subgraph, f"{project}_node_{initial_node}_subgraph.graphml")
 
 

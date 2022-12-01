@@ -1,3 +1,4 @@
-_target_: src.feature.embedding.W2VEmbedding
-model: w2v-so
-path: ${base_path}/data/models/SO_vectors_200.bin
+name: w2v-so
+cls:
+  _target_: src.feature.embedding.W2VEmbedding
+  path: ${base_path}/data/models/SO_vectors_200.bin

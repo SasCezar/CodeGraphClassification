@@ -1,3 +1,4 @@
-_target_: src.feature.embedding.FastTextEmbedding
-model: fastText
-path: ${base_path}/data/models/wiki.en.bin
+name: fastText
+cls:
+  _target_: src.feature.embedding.FastTextEmbedding
+  path: ${base_path}/data/models/wiki.en.bin
