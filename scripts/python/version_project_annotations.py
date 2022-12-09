@@ -6,7 +6,7 @@ import pandas
 from hydra import initialize, compose
 
 with initialize(version_base=None, config_path="../../src/conf/"):
-    cfg = compose(config_name='keyword_extraction.yaml', overrides=["local=default"])
+    cfg = compose(config_name='annotation.yaml', overrides=["local=default"])
 
 projects = sorted(glob.glob("/home/sasce/PycharmProjects/CodeGraphClassification/data/processed/annotations/name/*weka*.csv"), key=lambda x: int(x.split('-')[-2]))
 method = 'name'

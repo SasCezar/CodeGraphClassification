@@ -55,7 +55,7 @@ def load_content(content_path):
     return content
 
 
-@hydra.main(config_path="../conf", config_name="keyword_extraction", version_base="1.2")
+@hydra.main(config_path="../conf", config_name="annotation", version_base="1.2")
 def extract_label_keyword(cfg: DictConfig):
     """
     Extracts the keywords of the labels using the projects of that label and the git history (augmented data).

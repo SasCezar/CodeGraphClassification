@@ -6,7 +6,7 @@ import pandas
 from hydra import initialize, compose
 
 with initialize(version_base=None, config_path="../../src/conf/"):
-    cfg = compose(config_name='keyword_extraction.yaml', overrides=["local=default"])
+    cfg = compose(config_name='annotation.yaml', overrides=["local=default"])
 
 projects = ['Waikato|weka-3.8-903-04804ccd6dff03534cbf3f2a71a35c73eef24fe8.csv',
             'SonarSource|sonar-java-8464-6400749499be832a3e37fa2f6beed47f47c04f36.csv',

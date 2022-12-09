@@ -2,7 +2,7 @@
 defaults:
   - _self_
   - content: name
-  - embedding: SciBERT
+  - embedding: SO
   - local: default
   - dataset: gitranking
   - keyword: yake
@@ -21,3 +21,4 @@ project_path: ${base_path}/data/raw/dataset_with_graphs.csv
 content_dir: ${base_path}/data/processed/content/${content.name}
 keywords_dir: ${base_path}/data/processed/keywords/${content.name}/${keyword.name}
 annotations_path: ${base_path}/data/processed/annotations/${content.name}/
+project_labels_dir: ${base_path}/data/processed/project_labels/${content.name}/

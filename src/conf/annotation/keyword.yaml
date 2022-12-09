@@ -1,0 +1,5 @@
+# @package _global_
+name: name
+cls:
+  _target_: src.annotation.node.KeywordAnnotation
+  filter: ${filter}

@@ -10,7 +10,7 @@ from more_itertools import flatten
 from omegaconf import DictConfig
 
 
-@hydra.main(config_path="../conf", config_name="keyword_extraction", version_base="1.2")
+@hydra.main(config_path="../conf", config_name="annotation", version_base="1.2")
 def keywords_tfidf(cfg: DictConfig):
     keywords_path = Path(cfg.keywords_dir)
 

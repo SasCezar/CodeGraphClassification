@@ -17,20 +17,35 @@ class JSDivergence(Filtering):
     def filter(self, distribution):
         n = len(distribution)
         uniform_vec = np.ones(n) / n
-        norm = np.sum(distribution)
-        node_vec = np.zeros(n)
 
-        if jensenshannon(distribution, uniform_vec) >= self.threshold and norm > 0:
-            node_vec = distribution / norm
+        if jensenshannon(distribution, uniform_vec) >= self.threshold:
+            return 0
 
-        return node_vec
+        return 1
 
 
-class SingleLabel(Filtering):
+class Threshold(Filtering):
+    def __init__(self, threshold):
+        self.threshold = threshold
+
     def filter(self, distribution):
+        if np.max(distribution) >= self.threshold:
+            return 1
+
+        return 0
+
+
+class Transformation(ABC):
+    @abstractmethod
+    def transform(self, distribution):
+        pass
+
+
+class SingleLabel(Transformation):
+    def transform(self, distribution):
         return distribution
 
 
-class SoftSingleLabel(Filtering):
-    def filter(self, distribution):
+class SoftSingleLabel(Transformation):
+    def transform(self, distribution):
         return distribution
