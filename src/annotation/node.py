@@ -13,12 +13,20 @@ from feature.embedding import AbstractEmbeddingModel
 
 
 class Annotation(ABC):
+    def __init__(self, keywords_dir, annotations_path):
+        self.keywords, self.weights, self.mapping = self.load_keywords(keywords_dir)
+        self.n = len(self.mapping)
+        self.save_label_map(annotations_path)
+
     @abstractmethod
     def annotate(self, name, content):
         pass
 
     @staticmethod
-    def load_keywords(keywords_files):
+    def load_keywords(keywords_dir):
+        keywords_path = Path(keywords_dir, "similarity")
+        keywords_files = sorted(list(keywords_path.glob("*.csv")))
+
         keywords = {}
         weights = {}
         label_mapping = {}
@@ -29,20 +37,17 @@ class Annotation(ABC):
             keywords[label] = Multiset(df['keyword'].tolist())
             weights[label] = dict(zip(df['keyword'].tolist(), df['tfidf'].tolist()))
 
-        return keywords, label_mapping, weights
-
-
-class KeywordAnnotation(Annotation):
-    def __init__(self, keywords_files, annotations_path):
-        self.keywords, self.weights, self.mapping = self.load_keywords(keywords_files)
-        self.n = len(self.mapping)
-        self.save_label_map(annotations_path)
+        return keywords, weights, label_mapping
 
     def save_label_map(self, annotations_path):
         out_path = Path(join(annotations_path, f"label_mapping.json"))
+
         out_path.parent.mkdir(parents=True, exist_ok=True)
         with open(out_path, 'wt') as outf:
             json.dump(self.mapping, outf, ensure_ascii=False, indent=4)
+
+
+class KeywordAnnotation(Annotation):
 
     def annotate(self, name, content):
         node_labels = np.zeros(self.n)
@@ -59,17 +64,27 @@ class KeywordAnnotation(Annotation):
 
 
 class SemanticSimilarityAnnotation(Annotation):
-    def __init__(self, keywords_files, embedding: AbstractEmbeddingModel):
+    def __init__(self, keywords_dir, annotations_path, embedding: AbstractEmbeddingModel):
+        super().__init__(keywords_dir, annotations_path)
         self.embedding = embedding
-        _, _, self.mapping = self.load_keywords(keywords_files)
-        self.n = len(self.mapping)
+        self.label_vecs = self.embed_labels()
 
     def annotate(self, name, content):
-        name_vec = self.embedding.get_embedding(name)
-        node_labels = np.zeros(self.n)
-        for label in self.mapping:
-            label_vec = self.embedding.get_embedding(label)
-            sim = cosine_similarity(label_vec, name_vec)
-            node_labels[self.mapping[label]] = sim
+        content_vec = [self.embedding.get_embedding(content.lower())]
+
+        try:
+            sims = cosine_similarity(content_vec, self.label_vecs)
+        except ValueError:
+            print(f"Error in {name}")
+            print(f"Content: {content}")
+            print(f"Content vec: {content_vec}")
+        node_labels = sims[0]
 
         return node_labels
+
+    def embed_labels(self):
+        res = []
+        for label in self.mapping:
+            res.append(self.embedding.get_embedding(label.lower()))
+
+        return res

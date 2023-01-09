@@ -38,7 +38,7 @@ def extract_content(cfg: DictConfig):
                 try:
                     if content_extractor.clone:
                         git_checkout(join(cfg.repositories_path, project_name), sha)
-                    res = [x[1] for x in content_extractor.extract(project_name, sha, num) if x[1]]
+                    res = {x[0]: x[1] for x in content_extractor.extract(project_name, sha, num) if x[1]}
                     content = {"project": project, "num": num, "sha": sha, "content": res}
                     row = json.dumps(content, ensure_ascii=False)
                     f.write(row + os.linesep)

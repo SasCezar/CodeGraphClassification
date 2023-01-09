@@ -51,7 +51,8 @@ def load_content(content_path):
     with open(content_path, 'r') as f:
         for line in f:
             obj = json.loads(line)
-            content.extend(obj["content"])
+            for filename in obj['content']:
+                content.extend(obj["content"][filename])
     return content
 
 
@@ -63,8 +64,7 @@ def extract_label_keyword(cfg: DictConfig):
     :return:
     """
 
-    projects = pd.read_csv(cfg.project_path)  # .head(1000)
-    # skip_projects = ['Waikato|weka-3.8', 'SonarSource|sonar-java', 'GenomicParisCentre|eoulsan']
+    projects = pd.read_csv(cfg.project_path)
     skip_projects = []
 
     projects_keyword, term_freq = extract_keywords(set(projects['name'].tolist()), cfg)

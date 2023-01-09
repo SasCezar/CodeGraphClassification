@@ -1,0 +1,5 @@
+name: soft_label
+cls:
+  _target_: src.annotation.filtering.SoftLabel
+  top_k: 5
+  min_threshold: 0.05

@@ -2,3 +2,4 @@ name: SciBERT
 cls:
   _target_: src.feature.embedding.HuggingFaceEmbedding
   model: ${base_path}/data/models/scibert_scivocab_uncased
+  name: ${..name}

@@ -1,0 +1,4 @@
+name: w2v-so
+cls:
+  _target_: src.feature.embedding.SplitW2VEmbedding
+  path: ${base_path}/data/models/SO_vectors_200.bin

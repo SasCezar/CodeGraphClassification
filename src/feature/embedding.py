@@ -1,3 +1,4 @@
+import re
 from abc import ABC, abstractmethod
 
 import fasttext as ft
@@ -82,12 +83,37 @@ class W2VEmbedding(AbstractEmbeddingModel):
         :return:
         """
         embeddings = []
+        if not text:
+            embeddings.append(np.zeros(self.model.vector_size))
         for word in str(text).split():
             if word in self.model:
                 embeddings.append(self.model[word])
             else:
                 embeddings.append(np.zeros(self.model.vector_size))
         return numpy.mean(embeddings, axis=0)
+
+
+class SplitW2VEmbedding(W2VEmbedding):
+    def get_embedding(self, text: str) -> numpy.ndarray:
+        """
+        Returns the embedding of the text.
+        :param text:
+        :return:
+        """
+        embeddings = []
+        if not text:
+            embeddings.append(np.zeros(self.model.vector_size))
+        for word in self.split_camel(str(text)):
+            if word in self.model:
+                embeddings.append(self.model[word])
+            else:
+                embeddings.append(np.zeros(self.model.vector_size))
+        return numpy.mean(embeddings, axis=0)
+
+    def split_camel(self, name: str):
+        return re.sub(
+            '([A-Z][a-z]+)|_', r' \1', re.sub('([A-Z]+)', r' \1', name)
+        ).split()
 
 
 class HuggingFaceEmbedding(AbstractEmbeddingModel):

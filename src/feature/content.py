@@ -1,3 +1,4 @@
+import json
 import os
 import re
 from abc import abstractmethod, ABC
@@ -220,3 +221,44 @@ class CommentsContentExtraction(ContentExtraction):
                if x.lower() not in self.stopwords and len(x) > 1]
 
         return ids
+
+
+class JSONContentExtraction(ContentExtraction):
+    def get_content(self, project: str, graph: igraph.Graph):
+        pass
+
+    def __init__(self, content_path: str = None):
+        super().__init__(content_path, None)
+        self.content_path = content_path
+        self.clone = False
+
+    def extract(self, project_name: str, sha: str = None, num: str = None, clean_graph: bool = False) -> str:
+        """
+        Extracts the content of the project.
+        """
+        project = f"{project_name}.json"
+        with open(os.path.join(self.content_path, project), "r") as f:
+            for line in f:
+                obj = json.loads(line)
+                if obj['sha'] == sha:
+                    return obj['content']
+
+        raise ValueError(f"Could not find {sha} in {project_name}")
+
+    @staticmethod
+    def read_file(filename: str):
+        """
+        Reads the file and returns the text.
+        :param filename:
+        :return:
+        """
+        try:
+            with open(filename, "rt", encoding="utf8") as inf:
+                text = inf.read()
+        except UnicodeDecodeError:
+            with open(filename, "rt", encoding="latin1") as inf:
+                text = inf.read()
+        except Exception:
+            return ""
+
+        return text
