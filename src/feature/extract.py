@@ -1,3 +1,4 @@
+import json
 import os
 import re
 from abc import abstractmethod, ABC
@@ -5,6 +6,7 @@ from abc import abstractmethod, ABC
 from typing import Iterable
 
 import igraph
+import numpy as np
 import pandas as pd
 from more_itertools import flatten
 
@@ -184,3 +186,93 @@ class IdentifiersFeatureExtraction(FeatureExtraction):
                if x.lower() not in self.stopwords and len(x) > 1]
 
         return ids
+
+
+class MethodFeatureExtraction(FeatureExtraction):
+    """
+    Extracts the features using the identifiers from the source code as representation for the document.
+    """
+
+    def __init__(self, model: AbstractEmbeddingModel, graph_path: str = None, out_path: str = None,
+                 repo_path: str = None, methods_path: str = None, preprocess: bool = True, stopwords: Iterable = None):
+        super().__init__(model, graph_path, out_path, stopwords)
+        self.scp = None  # sourcy.load("java")
+        self.preprocess = preprocess
+        self.repositories = repo_path
+        self.method = 'methods'
+        self.methods = {}
+
+    def extract(self, project_name: str, sha: str = None, num: str = None, clean_graph: bool = False):
+        """
+        Extracts the features of the project.
+        :param project_name: Name of the project.
+        :param sha: SHA of the project version.
+        :param num: Number of the project version in the git history.
+        :param clean_graph: Whether to clean the graph.
+        :return:
+        """
+
+        graph_file = f"dependency-graph-{num}_{sha}.graphml"
+        features_name = f"dependency-graph-{num}_{sha}.vec"
+
+        graph = ArcanGraphLoader(clean=clean_graph).load(os.path.join(self.graph_path, project_name, graph_file))
+        features_out = os.path.join(self.out_path, "embedding", self.method, self.nlp.name, project_name)
+        self.methods = self.load_methods(os.path.join(self.graph_path, project_name), num, sha)
+        features = self.get_embeddings(project_name, graph)
+        check_dir(features_out)
+
+        self.save_features(features, features_out, features_name)
+
+    def get_embeddings(self, project: str, graph: igraph.Graph):
+        """
+        Returns the embeddings of files in the project.
+        :param project: Name of the project
+        :param graph: Graph of the project
+        :return:
+        """
+        for node in graph.vs:
+            path = os.path.join(self.repositories, project, )
+
+            if not os.path.isfile(path):
+                continue
+
+            methods = self.methods[node['filePathRelative']]
+            embeddings = []
+            for method in methods:
+                embeddings.append(self.nlp.get_embedding(method['body']))
+
+            embedding = np.mean(embeddings, axis=0)
+            yield node['filePathRelative'], path, embedding
+
+    @staticmethod
+    def read_file(filename: str):
+        """
+        Reads the file and returns the text.
+        :param filename:
+        :return:
+        """
+        with open(filename, "rt", encoding="utf8") as inf:
+            text = inf.read()
+
+        return text
+
+    def get_identifiers(self, path: str):
+        """
+        Returns the source code identifiers from the file.
+        :param path:
+        :return:
+        """
+        text = self.read_file(path)
+        doc = self.scp(text)
+        ids = [self.split_camel(x.token) for x in doc.identifiers]
+        ids = [x.lower() for x in flatten(ids)
+               if x.lower() not in self.stopwords and len(x) > 1]
+
+        return ids
+
+    def load_methods(self, file, num, sha):
+        with open(file, 'r') as f:
+            for line in f:
+                obj = json.loads(line)
+                if obj['num'] == num and obj['sha'] == sha:
+                    return obj['methods']

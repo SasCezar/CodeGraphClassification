@@ -2,5 +2,5 @@ name: similarity/${embedding.name}
 cls:
   _target_: src.annotation.node.SemanticSimilarityAnnotation
   keywords_dir: ${keywords_dir}
-  annotations_path: ${annotations_path}
+  annotations_path: ${annotations_dir}
   embedding: ${embedding.cls}

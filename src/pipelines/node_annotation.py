@@ -81,7 +81,6 @@ def compute_node_labels(contents, annotation, transform, filtering):
         if transform:
             vec = transform.transform(vec)
 
-
         node_labels[node] = {'distribution': [float(x) for x in vec], "unannotated": unannotated}
 
     return node_labels

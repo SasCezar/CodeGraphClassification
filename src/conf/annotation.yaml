@@ -6,22 +6,32 @@ defaults:
   - local: default
   - dataset: gitranking
   - keyword: yake
-  - node_annotation: keyword
-  - transformation: soft_label
-  - filtering: jsd
-
+  - node_annotation: similarity
+  - filtering: none
+  - transformation: none
+  - override hydra/launcher: joblib
   - override hydra/hydra_logging: colorlog
   - override hydra/job_logging: colorlog
 
+hydra:
+  launcher:
+    n_jobs: 6
+  sweeper:
+    params:
+      embedding: fastText,BERT,SSO
+      transformation: none,single_label,soft_label
+      filtering: none,jsd
 
 num_workers: 8
-
 
 force_new: False
 seed: 42
 
+settings: ${node_annotation.name}/${transformation.name}/${filtering.name}
 project_path: ${base_path}/data/raw/dataset_with_graphs.csv
 content_dir: ${base_path}/data/processed/content/${content.name}
 keywords_dir: ${base_path}/data/processed/keywords/name/${keyword.name}
-annotations_path: ${base_path}/data/processed/annotations/${node_annotation.name}/${transformation.name}/${filtering.name}
-project_labels_dir: ${base_path}/data/processed/project_labels/${content.name}/
+annotations_dir: ${base_path}/data/processed/annotations/
+annotations_path: ${annotations_dir}/${settings}
+project_labels_dir: ${base_path}/data/processed/project_labels/${settings}
+stats_dir: ${base_path}/output/stats/
