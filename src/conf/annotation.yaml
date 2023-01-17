@@ -2,7 +2,7 @@
 defaults:
   - _self_
   - content: name
-  - embedding: SSO
+  - embedding: fastText
   - local: default
   - dataset: gitranking
   - keyword: yake
@@ -13,16 +13,18 @@ defaults:
   - override hydra/hydra_logging: colorlog
   - override hydra/job_logging: colorlog
 
+num_workers: 1
+
 hydra:
   launcher:
-    n_jobs: 6
+    n_jobs: ${num_workers}
   sweeper:
     params:
+      # content: name, identifiers
       embedding: fastText,BERT,SSO
       transformation: none,single_label,soft_label
       filtering: none,jsd
 
-num_workers: 8
 
 force_new: False
 seed: 42
@@ -30,7 +32,7 @@ seed: 42
 settings: ${node_annotation.name}/${transformation.name}/${filtering.name}
 project_path: ${base_path}/data/raw/dataset_with_graphs.csv
 content_dir: ${base_path}/data/processed/content/${content.name}
-keywords_dir: ${base_path}/data/processed/keywords/name/${keyword.name}
+keywords_dir: ${base_path}/data/processed/keywords/${content.name}/${keyword.name}
 annotations_dir: ${base_path}/data/processed/annotations/
 annotations_path: ${annotations_dir}/${settings}
 project_labels_dir: ${base_path}/data/processed/project_labels/${settings}

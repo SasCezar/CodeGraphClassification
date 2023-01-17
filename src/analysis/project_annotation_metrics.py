@@ -9,13 +9,7 @@ from omegaconf import DictConfig
 from sklearn.metrics import precision_score, recall_score
 from sklearn.preprocessing import MultiLabelBinarizer
 
-
-def parse_settings(settings):
-    config = settings.split('/')
-    if len(config) == 5:
-        config.append('0')
-
-    return config[-3:]
+from utils import parse_settings
 
 
 @hydra.main(config_path="../conf", config_name="annotation", version_base="1.2")
@@ -34,8 +28,9 @@ def metrics(cfg: DictConfig):
         for line in f:
             annotations.append(json.loads(line))
 
+    filename = 'similarity_project_annotation_metrics.csv'
     skip_header = False
-    if os.path.exists(join(cfg.stats_dir, 'project_annotation_metrics.csv')):
+    if os.path.exists(join(cfg.stats_dir, filename)):
         skip_header = True
     os.makedirs(cfg.stats_dir, exist_ok=True)
 
@@ -48,9 +43,10 @@ def metrics(cfg: DictConfig):
         for i in depth:
             pred_labels[i].append(project['predicted_labels'][:i])
 
-    with open(join(cfg.stats_dir, 'project_annotation_metrics.csv'), 'at') as f:
+    with open(join(cfg.stats_dir, filename), 'at') as f:
         writer = csv.writer(f)
-        header = ['transformation', 'filtering', 'threshold', 'metric', 'at', 'value']
+        header = ['annotation', 'content', 'algorithm', 'transformation', 'filtering', 'threshold',
+                  'metric', 'K', 'value']
         writer.writerow(header) if not skip_header else None
 
         for i in depth:

@@ -6,13 +6,7 @@ from os.path import join
 import hydra
 from omegaconf import DictConfig
 
-
-def parse_settings(settings):
-    config = settings.split('/')
-    if len(config) == 5:
-        config.append('0')
-
-    return config[-3:]
+from utils import parse_settings
 
 
 @hydra.main(config_path="../conf", config_name="annotation", version_base="1.2")
@@ -24,21 +18,21 @@ def stats(cfg: DictConfig):
     """
 
     settings = parse_settings(cfg.settings)
-
     annotation_path = join(cfg.project_labels_dir, "annotations.json")
     annotations = []
     with open(annotation_path, 'rt') as f:
         for line in f:
             annotations.append(json.loads(line))
 
+    filename = 'similarity_project_annotation_stats.csv'
     skip_header = False
-    if os.path.exists(join(cfg.stats_dir, 'project_annotation_stats.csv')):
+    if os.path.exists(join(cfg.stats_dir, filename)):
         skip_header = True
     os.makedirs(cfg.stats_dir, exist_ok=True)
-    with open(join(cfg.stats_dir, 'project_annotation_stats.csv'), 'at') as f:
+    with open(join(cfg.stats_dir, filename), 'at') as f:
         writer = csv.writer(f)
-        header = ['project', 'transformation', 'filtering', 'threshold', 'project_jsd', "nodes", "unannotated",
-                  "percent_unannotated"]
+        header = ['project', 'content', 'annotation', 'algorithm', 'transformation', 'filtering', 'threshold',
+                  'jsd', "nodes", "unannotated", "percent_unannotated"]
         writer.writerow(header) if not skip_header else None
         for project in annotations:
             jsd = project['jsd']

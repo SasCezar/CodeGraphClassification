@@ -52,7 +52,7 @@ def load_content(content_path):
         for line in f:
             obj = json.loads(line)
             for filename in obj['content']:
-                content.extend(obj["content"][filename])
+                content.append(obj["content"][filename])
     return content
 
 

@@ -1,4 +1,4 @@
-name: similarity/${embedding.name}
+name: similarity/${content.name}/${embedding.name}
 cls:
   _target_: src.annotation.node.SemanticSimilarityAnnotation
   keywords_dir: ${keywords_dir}
