@@ -201,6 +201,7 @@ class MethodFeatureExtraction(FeatureExtraction):
         self.method = 'methods'
         self.methods = {}
         self.methods_path = methods_path
+        self.clone = False
 
     def extract(self, project_name: str, sha: str = None, num: str = None, clean_graph: bool = False):
         """
@@ -217,7 +218,7 @@ class MethodFeatureExtraction(FeatureExtraction):
 
         graph = ArcanGraphLoader(clean=clean_graph).load(os.path.join(self.graph_path, project_name, graph_file))
         features_out = os.path.join(self.out_path, "embedding", self.method, self.nlp.name, project_name)
-        self.methods = self.load_methods(os.path.join(self.methods_path, project_name), num, sha)
+        self.methods = self.load_methods(os.path.join(self.methods_path, f'{project_name}.json'), num, sha)
         features = self.get_embeddings(project_name, graph)
         check_dir(features_out)
 
@@ -231,18 +232,17 @@ class MethodFeatureExtraction(FeatureExtraction):
         :return:
         """
         for node in graph.vs:
-            path = os.path.join(self.repositories, project, node['filePathRelative'])
 
-            if not os.path.isfile(path) or node['filePathRelative'] not in self.methods:
+            if node['filePathRelative'] not in self.methods:
                 continue
 
             methods = self.methods[node['filePathRelative']]
             embeddings = []
             for method in methods:
-                embeddings.append(self.nlp.get_embedding(method['body']))
+                embeddings.append((method['body']))
 
             embedding = np.mean(embeddings, axis=0)
-            yield node['filePathRelative'], path, embedding
+            yield node['filePathRelative'], '', embedding
 
     @staticmethod
     def load_methods(file, num, sha):
@@ -250,4 +250,4 @@ class MethodFeatureExtraction(FeatureExtraction):
             for line in f:
                 obj = json.loads(line)
                 if obj['num'] == num and obj['sha'] == sha:
-                    return obj['methods']
+                    return obj['content']

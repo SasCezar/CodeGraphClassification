@@ -1,8 +1,8 @@
 # @package _global_
 defaults:
   - _self_
-  - extraction: name
-  - embedding: fastText
+  - extraction: method
+  - embedding: SantaCoder
   - local: default
   - dataset: gitranking
   - model: GCN

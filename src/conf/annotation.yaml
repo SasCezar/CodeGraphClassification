@@ -13,14 +13,14 @@ defaults:
   - override hydra/hydra_logging: colorlog
   - override hydra/job_logging: colorlog
 
-num_workers: 1
+num_workers: 12
 
 hydra:
   launcher:
     n_jobs: ${num_workers}
   sweeper:
     params:
-      # content: name, identifiers
+      content: name, identifiers
       embedding: fastText,BERT,SSO
       transformation: none,single_label,soft_label
       filtering: none,jsd
@@ -36,4 +36,5 @@ keywords_dir: ${base_path}/data/processed/keywords/${content.name}/${keyword.nam
 annotations_dir: ${base_path}/data/processed/annotations/
 annotations_path: ${annotations_dir}/${settings}
 project_labels_dir: ${base_path}/data/processed/project_labels/${settings}
+package_labels_dir: ${base_path}/data/processed/package_labels/${settings}
 stats_dir: ${base_path}/output/stats/

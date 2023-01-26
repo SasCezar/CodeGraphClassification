@@ -88,3 +88,4 @@ class SemanticSimilarityAnnotation(Annotation):
             res.append(self.embedding.get_embedding(label.lower()))
 
         return res
+

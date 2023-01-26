@@ -141,7 +141,7 @@ class HuggingFaceEmbedding(AbstractEmbeddingModel):
         return last_hidden_states.mean(1).detach().numpy()[0]
 
 
-class SentenceTransformersEmbedding():
+class SentenceTransformersEmbedding(AbstractEmbeddingModel):
     def __init__(self, name, model, device='cpu'):
         super().__init__()
         self._name = f'{name}'

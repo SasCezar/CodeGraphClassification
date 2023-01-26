@@ -8,7 +8,7 @@ authors = ["Cezar Sas <cezar.sas@gmail.com>"]
 python = ">=3.8,<3.11"
 igraph = "^0.10.1"
 hydra-core = "^1.3.1"
-more-itertools = "^8.14.0"
+more-itertools = "9.0.0"
 hydra-colorlog = "^1.2.0"
 spacy = "^3.4.1"
 gensim = "^4.2.0"

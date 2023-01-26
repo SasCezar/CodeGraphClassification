@@ -1,3 +1,4 @@
+import traceback
 from os.path import join
 
 import hydra
@@ -6,6 +7,8 @@ from hydra.utils import instantiate
 from loguru import logger
 from omegaconf import DictConfig
 
+from feature.embedding import AbstractEmbeddingModel
+from feature.extract import FeatureExtraction
 from utils import git_clone, get_versions, git_checkout
 
 
@@ -16,9 +19,9 @@ def extract_embeddings(cfg: DictConfig):
     :param cfg:
     :return:
     """
-    embedding = instantiate(cfg.embedding.cls)
+    embedding: AbstractEmbeddingModel = instantiate(cfg.embedding.cls)
 
-    extraction = instantiate(cfg.extraction.cls, model=embedding)
+    extraction: FeatureExtraction = instantiate(cfg.extraction.cls, model=embedding)
 
     projects = pd.read_csv(cfg.dataset)
 
@@ -35,7 +38,12 @@ def extract_embeddings(cfg: DictConfig):
         if extraction.clone:
             project_url = f'https://github.com/{project}'
             git_clone(project_url, project_name, cfg.repositories_path)
-        versions = get_versions(project_name, cfg.arcan_graphs)
+        try:
+            versions = [get_versions(project_name, cfg.arcan_graphs)[-1]]
+        except:
+            logger.error(f"Failed to extract features for {project} {num} {sha}")
+            logger.error(f"{e}")
+            continue
 
         logger.info(f"Found {len(versions)} versions for project {project}")
         for num, sha in versions:
@@ -44,6 +52,7 @@ def extract_embeddings(cfg: DictConfig):
                     git_checkout(join(cfg.repositories_path, project_name), sha)
                 extraction.extract(project_name, sha=sha, num=num)
             except Exception as e:
+                traceback.print_exc()
                 logger.error(f"Failed to extract features for {project} {num} {sha}")
                 logger.error(f"{e}")
                 continue
