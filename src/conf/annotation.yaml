@@ -13,17 +13,19 @@ defaults:
   - override hydra/hydra_logging: colorlog
   - override hydra/job_logging: colorlog
 
-num_workers: 12
+num_workers: 1
 
 hydra:
   launcher:
     n_jobs: ${num_workers}
   sweeper:
     params:
-      content: name, identifiers
-      embedding: fastText,BERT,SSO
+      #content: name, identifiers
+      #node_annotation: keyword
+      embedding: SSO,BERT,fastText
+      node_annotation: similarity
       transformation: none,single_label,soft_label
-      filtering: none,jsd
+      filtering: none, jsd25, jsd50
 
 
 force_new: False
@@ -35,6 +37,8 @@ content_dir: ${base_path}/data/processed/content/${content.name}
 keywords_dir: ${base_path}/data/processed/keywords/${content.name}/${keyword.name}
 annotations_dir: ${base_path}/data/processed/annotations/
 annotations_path: ${annotations_dir}/${settings}
-project_labels_dir: ${base_path}/data/processed/project_labels/${settings}
-package_labels_dir: ${base_path}/data/processed/package_labels/${settings}
+project_labels_dir: ${base_path}/data/processed/project_labels/
+project_labels_path: ${project_labels_dir}/${settings}
+package_labels_dir: ${base_path}/data/processed/package_labels/
+package_labels_path: ${package_labels_dir}/${settings}
 stats_dir: ${base_path}/output/stats/

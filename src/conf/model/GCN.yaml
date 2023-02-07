@@ -1,4 +1,0 @@
-name: rake
-cls:
-  _target_: src.model.gcn.GraphConvNetwork
-  hidden_channels: 256

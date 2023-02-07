@@ -6,6 +6,7 @@ library(ggh4x)
 
 
 dt <- read.csv("/home/sasce/PycharmProjects/CodeGraphClassification/output/stats/similarity_project_annotation_stats.csv")
+dt$threshold <- as.factor(dt$threshold)
 dt <- dt %>% 
   mutate(transformation = replace(transformation, transformation == 'single_label', 'single')) %>%
   mutate(transformation = replace(transformation, transformation == 'soft_label', 'soft')) %>%
@@ -15,15 +16,15 @@ dt <- dt %>%
 alpha=0.5
 width=0.15
 
-p <- ggplot(dt, aes(y = jsd , x=filtering, fill = filtering, color=filtering)) +
+p <- ggplot(dt, aes(y = jsd , x=threshold, fill = threshold, color=threshold)) +
   geom_violin(alpha=alpha) +
   geom_boxplot(width = width, fill="white") +
-  facet_nested(~ content + annotation + algorithm + transformation)
+  facet_nested(~ annotation + content + algorithm + transformation)
 p
 
 
-p <- ggplot(dt, aes(y = percent_unannotated , x = filtering,  fill= filtering, color=filtering)) +
+p <- ggplot(dt, aes(y = percent_unannotated , x = threshold,  fill= threshold, color=threshold)) +
   geom_violin(alpha=alpha) +
   geom_boxplot(width = width, fill="white") +
-  facet_nested(~ content + annotation + algorithm)
+  facet_nested(~ annotation + content + algorithm)
 p

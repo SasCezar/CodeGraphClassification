@@ -8,6 +8,7 @@ import hydra
 import numpy as np
 import pandas as pd
 from loguru import logger
+from numpy.linalg import norm
 from omegaconf import DictConfig
 from scipy.spatial.distance import jensenshannon
 from tqdm import tqdm
@@ -22,12 +23,12 @@ def projects_level_labels(annotations_path):
 
     unannotated_count = 0
     for node, labels in obj.items():
-        if not labels['unannotated']:
+        if not labels['unannotated'] and norm(labels['distribution']):
             node_labels.append(labels['distribution'])
         else:
             unannotated_count += 1
     agg = np.array(node_labels).mean(axis=0)
-    agg = np.array(agg) / np.linalg.norm(agg)
+    agg = np.array(agg) / norm(agg)
 
     return agg, unannotated_count, len(obj)
 
@@ -48,8 +49,8 @@ def annotate_project(cfg: DictConfig):
         label_map = json.load(outf)
     label_map = {v: k for k, v in label_map.items()}
 
-    Path(cfg.project_labels_dir).mkdir(parents=True, exist_ok=True)
-    with open(join(cfg.project_labels_dir, "annotations.json"), 'wt') as outf:
+    Path(cfg.project_labels_path).mkdir(parents=True, exist_ok=True)
+    with open(join(cfg.project_labels_path, "annotations.json"), 'wt') as outf:
         for project, labels in tqdm(zip(projects, proj_labels)):
             try:
                 project_name = project.replace('/', '|')

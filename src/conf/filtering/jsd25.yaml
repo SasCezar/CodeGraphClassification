@@ -1,0 +1,4 @@
+name: JSDivergence/${.cls.threshold}
+cls:
+  _target_: src.annotation.filtering.JSDivergence
+  threshold: 0.25

@@ -18,7 +18,7 @@ def stats(cfg: DictConfig):
     """
 
     settings = parse_settings(cfg.settings)
-    annotation_path = join(cfg.project_labels_dir, "annotations.json")
+    annotation_path = join(cfg.project_labels_path, "annotations.json")
     annotations = []
     with open(annotation_path, 'rt') as f:
         for line in f:
@@ -31,7 +31,7 @@ def stats(cfg: DictConfig):
     os.makedirs(cfg.stats_dir, exist_ok=True)
     with open(join(cfg.stats_dir, filename), 'at') as f:
         writer = csv.writer(f)
-        header = ['project', 'content', 'annotation', 'algorithm', 'transformation', 'filtering', 'threshold',
+        header = ['project', 'annotation', 'content', 'algorithm', 'transformation', 'filtering', 'threshold',
                   'jsd', "nodes", "unannotated", "percent_unannotated"]
         writer.writerow(header) if not skip_header else None
         for project in annotations:

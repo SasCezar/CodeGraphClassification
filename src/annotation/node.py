@@ -89,3 +89,10 @@ class SemanticSimilarityAnnotation(Annotation):
 
         return res
 
+
+class EnsembleAnnotation:
+    def __int__(self, methods):
+        self.ensemble_methods = methods
+
+    def annotate(self, name, content):
+        pass

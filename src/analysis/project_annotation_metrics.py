@@ -5,6 +5,7 @@ from collections import defaultdict
 from os.path import join
 
 import hydra
+from more_itertools import flatten
 from omegaconf import DictConfig
 from sklearn.metrics import precision_score, recall_score
 from sklearn.preprocessing import MultiLabelBinarizer
@@ -22,7 +23,7 @@ def metrics(cfg: DictConfig):
 
     settings = parse_settings(cfg.settings)
 
-    annotation_path = join(cfg.project_labels_dir, "annotations.json")
+    annotation_path = join(cfg.project_labels_path, "annotations.json")
     annotations = []
     with open(annotation_path, 'rt') as f:
         for line in f:
@@ -50,7 +51,8 @@ def metrics(cfg: DictConfig):
         writer.writerow(header) if not skip_header else None
 
         for i in depth:
-            mlb = MultiLabelBinarizer()
+            all_labels = set(flatten(true_labels)).union(set(flatten(pred_labels[i])))
+            mlb = MultiLabelBinarizer(classes=list(all_labels))
             y_true = mlb.fit_transform(true_labels)
             y_pred = mlb.transform(pred_labels[i])
             precision = precision_score(y_true, y_pred, average='samples')

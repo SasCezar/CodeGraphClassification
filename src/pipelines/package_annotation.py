@@ -12,6 +12,7 @@ import numpy
 import numpy as np
 import pandas as pd
 from loguru import logger
+from numpy.linalg import norm
 from omegaconf import DictConfig
 from scipy.spatial.distance import jensenshannon
 from tqdm import tqdm
@@ -27,48 +28,10 @@ def load_annotations(annotations_path):
     return obj
 
 
-def load_package_file(graph):
-    package_nodes = [x for x in graph.vs if x['labelV'] == 'container']
-    package_files = {}
-    tot = 0
-    for package in package_nodes:
-        name = package['name']
-        neighbors = [graph.vs[x]['filePathRelative'] for x in graph.neighbors(package.index) if
-                     graph.vs[x]['labelV'] == 'unit']
-        tot += len(neighbors)
-        if neighbors:
-            package_files[name] = neighbors
-
-    nodes = len([x for x in graph.vs if x['labelV'] == 'unit'])
-    assert nodes == tot, print(nodes, tot)
-
-    return package_files
-
-
-def load_package_file2(graph):
-    package_nodes = [x for x in graph.vs if x['labelV'] == 'container']
-    package_files = {}
-    tot = 0
-    for package in package_nodes:
-        name = package['name']
-        neighbors = [ \
-            graph.vs[edge.source]['filePathRelative'] if edge.target == package.index else graph.vs[edge.source][
-                'filePathRelative'] \
-            for edge in graph.es[graph.incident(package.index)] \
-            if edge['labelE'] == 'belongsTo'
-        ]
-        tot += len(neighbors)
-        if neighbors:
-            package_files[name] = neighbors
-
-    return package_files
-
-
-def load_package_file3(graph, annotations):
+def load_package_file(graph, annotations):
     nodes_id = [x for x in graph.vs if x['filePathRelative'] in annotations if
                 graph.vs[x.index]['filePathRelative'] != '.']
     package_files = defaultdict(list)
-    tot = 0
     for node in nodes_id:
         packages = [graph.vs[x]['name'] for x in graph.neighbors(node.index) if
                     graph.vs[x]['labelV'] == 'container']
@@ -94,7 +57,7 @@ def annotate(annotations, package_files_map):
                 continue
             all_package_annotations.append(annotations[file]['distribution'])
             total += 1
-            if not annotations[file]['unannotated']:
+            if not annotations[file]['unannotated'] and norm(annotations[file]['distribution']):
                 clean_package_annotations.append(annotations[file]['distribution'])
             else:
                 num_unannotated += 1
@@ -203,8 +166,8 @@ def annotate_package(cfg: DictConfig):
 
     logger.info(f"Extracting features for {len(projects)} projects")
 
-    Path(cfg.package_labels_dir).mkdir(parents=True, exist_ok=True)
-    with open(join(cfg.package_labels_dir, "annotations.json"), 'wt') as outf:
+    Path(cfg.package_labels_path).mkdir(parents=True, exist_ok=True)
+    with open(join(cfg.package_labels_path, "annotations.json"), 'wt') as outf:
         for project in tqdm(projects):
             try:
                 project_name = project.replace('/', '|')
@@ -219,7 +182,7 @@ def annotate_package(cfg: DictConfig):
 
                 graph = ArcanGraphLoader().load(
                     join(cfg.arcan_graphs, project_name, f"dependency-graph-{num}_{sha}.graphml"))
-                package_files_map = load_package_file3(graph, annotations)
+                package_files_map = load_package_file(graph, annotations)
                 package_annotations = annotate(annotations, package_files_map)
 
                 # res = {'project': project_name, 'num': num, 'sha': sha, 'packages': package_annotation}

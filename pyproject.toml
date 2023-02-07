@@ -41,6 +41,7 @@ kaleido = "0.2.1"
 sentence-transformers = "^2.2.2"
 transformers = "^4.25.1"
 hydra-joblib-launcher = "^1.2.0"
+snorkel = "^0.9.9"
 
 
 [tool.poetry.dev-dependencies]
