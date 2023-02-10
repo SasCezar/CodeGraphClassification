@@ -17,19 +17,33 @@ alpha=0.5
 width=0.15
 
 p <- ggplot(dt, aes(y = jsd , x=threshold, fill = threshold, color=threshold)) +
-  geom_violin(alpha=alpha) +
-  geom_boxplot(width = width, fill="white") +
-  facet_nested(clean~ annotation + content + algorithm + transformation)
+  geom_violin(alpha=alpha,  show.legend = FALSE) +
+  facet_nested(clean~ annotation + content + algorithm + transformation) +
+  theme(text = element_text(size = 12),
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  xlab("Filtering Threshold") + ylab("JSD") 
 p
+
+ggsave('/home/sasce/PycharmProjects/CodeGraphClassification/reports/plots/statistics/package_JSD.pdf', width=9, height=8)
 
 p <- ggplot(dt, aes(y = cohesion , x=threshold, fill = threshold, color=threshold)) +
-  geom_violin(alpha=alpha) +
-  geom_boxplot(width = width, fill="white") +
-  facet_nested(clean~ annotation + content  + algorithm + transformation)
+  geom_violin(alpha=alpha,  show.legend = FALSE) +
+  facet_nested(clean~ annotation + content  + algorithm + transformation) +
+  theme(text = element_text(size = 12),
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  xlab("Filtering Threshold") + ylab("Cohesion (%)") 
 p
 
+ggsave('/home/sasce/PycharmProjects/CodeGraphClassification/reports/plots/statistics/package_cohesion.pdf', width=9, height=8)
+
+
 p <- ggplot(dt, aes(y = unannotated , x=threshold, fill = threshold, color=threshold)) +
-  geom_violin(alpha=alpha) +
-  geom_boxplot(width = width, fill="white") +
-  facet_nested(~ annotation + content  + algorithm + transformation)
+  geom_violin(alpha=alpha,  show.legend = FALSE) +
+  facet_nested( ~ annotation + content  + algorithm + transformation) +
+  theme(text = element_text(size = 12),
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  xlab("Filtering Threshold") + ylab("Unannotated (%)") 
 p
+
+ggsave('/home/sasce/PycharmProjects/CodeGraphClassification/reports/plots/statistics/package_unannotated.pdf', width=9, height=4)
+

@@ -6,6 +6,7 @@ from os.path import join
 
 import hydra
 import numpy as np
+import pandas
 import pandas as pd
 from joblib import Parallel, delayed
 from omegaconf import DictConfig
@@ -64,7 +65,8 @@ def make_matrix(projects, lf_annot, mapping):
 def load_files(path):
     files = glob.glob(path + '/**/*.json', recursive=True)
     files = [(x, x.replace(path, '').replace('/annotations.json', '')) for x in files if
-             'single_label' in x]  # and ('w2v-so' in x or 'keyword' in x)]
+             # 'single_label' not in x and 'soft_label' not in x and
+             'ensemble' not in x]  # and ('w2v-so' in x or 'keyword' in x)]
     return files
 
 
@@ -160,29 +162,65 @@ def analyze(cfg: DictConfig):
 def load_annot_all(files):
     annot = defaultdict(dict)
     projects = set()
-
+    polarity = defaultdict(set)
+    num_labels = set()
     for file_path, filename in files:
         with open(file_path, 'rt') as inf:
             for line in inf:
                 proj = json.loads(line)
                 pred = proj['predicted_labels'][:10]
+                num_labels.update(proj['true_labels'])
                 annot[filename][proj['project']] = pred
                 projects.add(proj['project'])
+                polarity[filename].update(pred)
 
-    return projects, annot
+    print(len(num_labels))
+    return projects, annot, polarity
+
+
+def polarity_latex(polarity):
+    index = [parse_settings(k) for k in polarity]
+    polarity = [(*parse_settings(k), len(polarity[k])) for k in polarity]
+
+    index = pandas.MultiIndex.from_frame(
+        pd.DataFrame(index, columns=['annotation', 'content', 'algorithm', 'transformation', 'filtering', 'threshold']))
+    polarity = pd.DataFrame(polarity,
+                            columns=['annotation', 'content', 'algorithm', 'transformation', 'filtering', 'threshold',
+                                     'polarity'])
+    polarity.to_csv('polarity.csv', index=False)
+    tex = pd.DataFrame(data=polarity['polarity'].tolist(), index=index).transpose()
+    tex.reset_index(inplace=True)
+    tex = tex.to_latex(float_format="{:0.2f}".format,
+                       index=False,
+                       escape=True,
+                       sparsify=True,
+                       multirow=True,
+                       multicolumn=True,
+                       multicolumn_format='c',
+                       position='htbp')
+
+    print(tex)
 
 
 @hydra.main(config_path="../conf", config_name="annotation", version_base="1.3")
 def pairwise_stats(cfg: DictConfig):
     files = load_files(cfg.project_labels_dir)
     pairs = list(combinations(files, 2))
+    print(len(pairs))
 
-    projects, lf_annot = load_annot_all(files)
+    projects, lf_annot, polarity = load_annot_all(files)
+    polarity_latex(polarity)
 
-    res = Parallel(n_jobs=8, prefer="threads")(delayed(lf_agreement)(a, b, lf_annot) for a, b in pairs)
+    res = Parallel(n_jobs=10)(delayed(lf_agreement)(a, b, lf_annot) for a, b in tqdm(pairs))
     conflicts = pd.concat(res)
 
-    conflicts.to_csv('agreement.csv', index=False)
+    conflicts.to_csv('agreement_all.csv', index=False)
+    aggregated = \
+        conflicts.groupby(['x_annotation', 'x_content', 'x_algorithm', 'x_transformation', 'x_filtering', 'x_threshold',
+                           'y_annotation', 'y_content', 'y_algorithm', 'y_transformation', 'y_filtering', 'y_threshold',
+                           'k'])['agreement', 'agreement_percent'].mean()
+    aggregated.reset_index(inplace=True)
+    aggregated.to_csv('aggregated_agreement_all.csv', index=False)
 
 
 def lf_agreement(a, b, lf_annot):

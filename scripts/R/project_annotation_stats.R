@@ -17,14 +17,25 @@ alpha=0.5
 width=0.15
 
 p <- ggplot(dt, aes(y = jsd , x=threshold, fill = threshold, color=threshold)) +
-  geom_violin(alpha=alpha) +
-  geom_boxplot(width = width, fill="white") +
-  facet_nested(~ annotation + content + algorithm + transformation)
+  geom_violin(alpha=alpha, show.legend = FALSE) +
+  geom_boxplot(width = width, fill="white",show.legend = FALSE) +
+  facet_nested(~ annotation + content + algorithm + transformation)+
+  theme(text = element_text(size = 12),
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  xlab("Filtering Threshold") + ylab("JSD") 
 p
 
+ggsave('/home/sasce/PycharmProjects/CodeGraphClassification/reports/plots/statistics/project_JSD.pdf', width=9, height=4)
 
 p <- ggplot(dt, aes(y = percent_unannotated , x = threshold,  fill= threshold, color=threshold)) +
-  geom_violin(alpha=alpha) +
-  geom_boxplot(width = width, fill="white") +
-  facet_nested(~ annotation + content + algorithm)
+  geom_violin(alpha=alpha,  show.legend = FALSE) +
+  geom_boxplot(width = width, fill="white",  show.legend = FALSE) +
+  facet_nested(~ annotation + content + algorithm) +
+  theme(text = element_text(size = 12),
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  xlab("Filtering Threshold") + ylab("Unannotated (%)") 
 p
+
+
+ggsave('/home/sasce/PycharmProjects/CodeGraphClassification/reports/plots/statistics/project_unannotated.pdf', width=9, height=4)
+
