@@ -16,7 +16,6 @@ from utils import git_clone, get_versions, git_checkout
 @hydra.main(config_path="../conf", config_name="annotation", version_base="1.2")
 def extract_content(cfg: DictConfig):
     """
-    Extracts the keywords of the labels using the projects of that label and the git history (augmented data).
     :param cfg:
     :return:
     """

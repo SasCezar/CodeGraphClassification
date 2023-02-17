@@ -30,7 +30,6 @@ def load_lf_annotations(ensemble_functions):
 @hydra.main(config_path="../conf", config_name="annotation", version_base="1.2")
 def node_ensemble(cfg: DictConfig):
     """
-    Extracts features from a project including the git history (augmented data).
     :param cfg:
     :return:
     """

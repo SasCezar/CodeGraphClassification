@@ -82,7 +82,7 @@ def annotate(annotations, package_files_map):
 
 
 def pairwise_jsd(annot):
-    pairs = combinations(annot, 2)
+    pairs = list(combinations(annot, 2))
     x = []
     y = []
     scores = []
@@ -96,6 +96,8 @@ def pairwise_jsd(annot):
 
     if x:
         scores.extend(list(jensenshannon(x, y, axis=1)))
+
+    scores = [x if np.isfinite(x) else -1 for x in scores]
 
     return scores
 
@@ -195,6 +197,8 @@ def annotate_package(cfg: DictConfig):
                     pack[package] = cohesion[package]
                     pack[package].update(jsd[package])
                     pack[package]['percent_unannotated'] = package_annotations[package]['percent_unannotated']
+                    pack[package]['clean_distribution'] = package_annotations[package]['clean_distribution']
+                    pack[package]['all_distribution'] = package_annotations[package]['all_distribution']
 
                 res = {'project': project_name, 'num': num, 'sha': sha, 'packages': pack}
 

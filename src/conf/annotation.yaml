@@ -1,12 +1,12 @@
 # @package _global_
 defaults:
   - _self_
-  - content: name
+  - content: identifiers
   - embedding: fastText
   - local: default
   - dataset: gitranking
   - keyword: yake
-  - node_annotation: similarity
+  - node_annotation: keyword
   - filtering: none
   - transformation: none
   - ensemble: best
@@ -37,13 +37,15 @@ project_path: ${base_path}/data/raw/dataset_with_graphs.csv
 content_dir: ${base_path}/data/processed/content/${content.name}
 keywords_dir: ${base_path}/data/processed/keywords/${content.name}/${keyword.name}
 annotations_dir: ${base_path}/data/processed/annotations/
-#annotations_path: ${annotations_dir}/${settings}
-annotations_path: ${annotations_dir}/ensemble/best
+annotations_path: ${annotations_dir}/${settings}
+#annotations_path: ${annotations_dir}/ensemble/best
 #annotations_path: ${annotations_dir}/keyword/identifiers/yake/none/JSDivergence/0.5
 project_labels_dir: ${base_path}/data/processed/project_labels/
-#project_labels_path: ${project_labels_dir}/${settings}
-project_labels_path: ${project_labels_dir}/ensemble/best
+project_labels_path: ${project_labels_dir}/${settings}
+#project_labels_path: ${project_labels_dir}/ensemble/best
 #project_labels_path: /home/sasce/PycharmProjects/CodeGraphClassification/data/processed/project_labels/keyword/identifiers/yake/none/JSDivergence/0.5
 package_labels_dir: ${base_path}/data/processed/package_labels/
 package_labels_path: ${package_labels_dir}/${settings}
 stats_dir: ${base_path}/output/stats/
+labelled_graph_dir: ${base_path}/data/processed/labelled_graph
+labelled_graph_path: ${labelled_graph_dir}/${settings}
