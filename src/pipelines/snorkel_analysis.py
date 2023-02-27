@@ -65,7 +65,7 @@ def make_matrix(projects, lf_annot, mapping):
 def load_files(path):
     files = glob.glob(path + '/**/*.json', recursive=True)
     files = [(x, x.replace(path, '').replace('/annotations.json', '')) for x in files if
-             # 'single_label' not in x and 'soft_label' not in x and
+             'single_label' not in x and 'soft_label' not in x and
              'ensemble' not in x]  # and ('w2v-so' in x or 'keyword' in x)]
     return files
 

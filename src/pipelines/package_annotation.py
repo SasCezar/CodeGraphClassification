@@ -2,7 +2,6 @@ import json
 import os
 import traceback
 from collections import defaultdict
-from copy import deepcopy
 from itertools import combinations
 from os.path import join
 from pathlib import Path
@@ -44,39 +43,33 @@ def load_package_file(graph, annotations):
 def annotate(annotations, package_files_map):
     package_annotations = defaultdict(lambda: defaultdict(list))
     skipped = 0
-    n = 267
     skipped_packages = 0
     for package in package_files_map:
-        all_package_annotations = []
-        clean_package_annotations = []
+        clean_nodes_dist = []
         num_unannotated = 0
         total = 0
         for file in package_files_map[package]:
             if file not in annotations:
                 skipped += 1
                 continue
-            all_package_annotations.append(annotations[file]['distribution'])
             total += 1
+
             if not annotations[file]['unannotated'] and norm(annotations[file]['distribution']):
-                clean_package_annotations.append(annotations[file]['distribution'])
+                clean_nodes_dist.append(annotations[file]['distribution'])
             else:
                 num_unannotated += 1
 
-        if total:
-            mean_all = np.array(all_package_annotations).mean(axis=0) if all_package_annotations else np.zeros(n)
-            mean_clean = np.array(clean_package_annotations).mean(axis=0) if clean_package_annotations else np.zeros(n)
-
-            package_annotations[package]['clean_nodes'] = all_package_annotations
-            package_annotations[package]['all_nodes'] = clean_package_annotations
+        if total and clean_nodes_dist:
+            mean_clean = np.array(clean_nodes_dist).mean(axis=0)
+            package_annotations[package]['clean_nodes'] = clean_nodes_dist
             package_annotations[package]['clean_distribution'] = list(mean_clean)
-            package_annotations[package]['all_distribution'] = list(mean_all)
+            package_annotations[package]['total'] = total
             package_annotations[package]['num_unannotated'] = num_unannotated
             package_annotations[package]['percent_unannotated'] = num_unannotated / total
+            package_annotations[package]['unannotated'] = 0
         else:
+            package_annotations[package]['unannotated'] = 1
             skipped_packages += 1
-
-    if skipped_packages == len(package_files_map):
-        print('Error')
 
     return package_annotations
 
@@ -97,7 +90,7 @@ def pairwise_jsd(annot):
     if x:
         scores.extend(list(jensenshannon(x, y, axis=1)))
 
-    scores = [x if np.isfinite(x) else -1 for x in scores]
+    scores = [x for x in scores if np.isfinite(x)]
 
     return scores
 
@@ -105,22 +98,30 @@ def pairwise_jsd(annot):
 def annotation_cohesion(package_annotations):
     res = {}
     for package in package_annotations:
+        if package_annotations[package]['unannotated']:
+            res[package] = {'clean_package_cohesion': 0,
+                            'all_package_cohesion': 0}
+            continue
 
-        all_annot = package_annotations[package]['all_nodes']
         clean_annot = package_annotations[package]['clean_nodes']
-        all_mean = -1
-        if len(all_annot) > 2:
-            all_jsd_dist = pairwise_jsd(all_annot)
-            all_mean = np.ma.masked_invalid(all_jsd_dist).mean()
-            if type(all_mean) == numpy.ma.core.MaskedConstant:
-                all_mean = -1
 
-        clean_mean = -1
         if len(clean_annot) > 2:
-            clean_jsd_dist = pairwise_jsd(clean_annot)
-            clean_mean = np.ma.masked_invalid(clean_jsd_dist).mean()
-            if type(clean_mean) == numpy.ma.core.MaskedConstant:
-                clean_mean = -1
+            clean_jsd = pairwise_jsd(clean_annot)
+            clean_mean = np.mean(clean_jsd)
+            all_mean = sum(clean_jsd) / package_annotations[package]['total']
+        else:
+            clean_mean = 1 / package_annotations[package]['total']
+            all_mean = 1 / package_annotations[package]['total']
+
+        if all_mean > 1:
+            print('Mean', all_mean)
+            print('Annot', clean_annot)
+            print('Total', package_annotations[package]['total'])
+
+        if not np.isfinite(clean_mean):
+            clean_mean = 0
+        if not np.isfinite(all_mean):
+            all_mean = 0
 
         res[package] = {'clean_package_cohesion': clean_mean,
                         'all_package_cohesion': all_mean}
@@ -129,36 +130,37 @@ def annotation_cohesion(package_annotations):
 
 
 def package_jsd(package_annotations):
-    test = deepcopy(package_annotations)
-    n = len(test.popitem()[1]['all_distribution'])
+    n = 267
     uniform_dist = np.ones(n) / n
     res = {}
-    clean_package = []
-    all_package = []
+    clean_dist = []
+    clean_packages = {}
+
     for package in package_annotations:
-        clean_annot = package_annotations[package]['clean_distribution']
-        clean_package.append(clean_annot)
-        all_annot = package_annotations[package]['all_distribution']
-        all_package.append(all_annot)
+        if not package_annotations[package]['unannotated']:
+            clean_annot = package_annotations[package]['clean_distribution']
+            clean_packages[package] = len(clean_dist)
+            clean_dist.append(clean_annot)
 
-    jsd_clean = jensenshannon(clean_package, [uniform_dist] * len(clean_package), axis=1)
-    jsd_all = jensenshannon(all_package, [uniform_dist] * len(all_package), axis=1)
-    assert len(jsd_all) == len(all_package)
+    if clean_dist:
+        uniform = [uniform_dist] * len(clean_dist)
+        jsd_clean = jensenshannon(clean_dist, uniform, axis=1)
+        assert len(jsd_clean) == len(clean_dist)
 
-    for i, package in enumerate(package_annotations):
-        clean_score = jsd_clean[i]
-        all_score = jsd_all[i]
+    for package in package_annotations:
+        if package in clean_packages:
+            clean_score = jsd_clean[clean_packages[package]]
+        else:
+            clean_score = 0
         if not numpy.isfinite(clean_score):
             clean_score = -1
-        if not numpy.isfinite(all_score):
-            clean_score = -1
-        res[package] = {"jsd_clean": clean_score, "jsd_all": all_score}
+        res[package] = {"jsd_clean": clean_score}
 
     return res
 
 
 @hydra.main(config_path="../conf", config_name="annotation", version_base="1.3")
-def annotate_package(cfg: DictConfig):
+def package_annotation(cfg: DictConfig):
     projects = pd.read_csv(cfg.dataset)
 
     projects = projects[projects['language'].str.upper() == cfg.language.upper()]
@@ -190,15 +192,16 @@ def annotate_package(cfg: DictConfig):
                 # res = {'project': project_name, 'num': num, 'sha': sha, 'packages': package_annotation}
                 assert len(package_annotations)
                 cohesion = annotation_cohesion(package_annotations)
-                jsd = package_jsd(package_annotations)
+                jsd = package_jsd(package_annotations) if package_annotations else defaultdict(lambda: {"jsd_clean": 0})
 
-                pack = {}
+                pack = defaultdict(lambda: defaultdict(object))
                 for package in cohesion:
-                    pack[package] = cohesion[package]
+                    pack[package].update(cohesion[package])
                     pack[package].update(jsd[package])
                     pack[package]['percent_unannotated'] = package_annotations[package]['percent_unannotated']
                     pack[package]['clean_distribution'] = package_annotations[package]['clean_distribution']
-                    pack[package]['all_distribution'] = package_annotations[package]['all_distribution']
+                    pack[package]['num_nodes'] = package_annotations[package]['total']
+                    pack[package]['unannotated'] = package_annotations[package]['unannotated']
 
                 res = {'project': project_name, 'num': num, 'sha': sha, 'packages': pack}
 
@@ -215,4 +218,4 @@ def annotate_package(cfg: DictConfig):
 
 
 if __name__ == '__main__':
-    annotate_package()
+    package_annotation()

@@ -91,5 +91,5 @@ def single_score(cfg: DictConfig):
 
 
 if __name__ == '__main__':
-    # metrics()
-    single_score()
+    metrics()
+    # single_score()

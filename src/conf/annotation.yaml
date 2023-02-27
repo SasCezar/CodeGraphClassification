@@ -1,7 +1,7 @@
 # @package _global_
 defaults:
   - _self_
-  - content: identifiers
+  - content: name
   - embedding: fastText
   - local: default
   - dataset: gitranking
@@ -14,17 +14,18 @@ defaults:
   - override hydra/hydra_logging: colorlog
   - override hydra/job_logging: colorlog
 
-num_workers: 1
+num_workers: 4
 
 hydra:
   launcher:
     n_jobs: ${num_workers}
   sweeper:
     params:
-      #content: name, identifiers
-      #node_annotation: keyword
-      embedding: SSO,BERT,fastText
-      node_annotation: similarity
+      content: name, identifiers
+      node_annotation: keyword
+      #content: name
+      #embedding: SSO, BERT, fastText
+      #node_annotation: similarity
       transformation: none,single_label,soft_label
       filtering: none, jsd25, jsd50
 

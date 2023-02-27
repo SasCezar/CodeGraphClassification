@@ -1,5 +1,6 @@
 import glob
 import json
+import traceback
 import warnings
 from os.path import join
 from pathlib import Path
@@ -12,9 +13,12 @@ from omegaconf import DictConfig
 from tqdm import tqdm
 
 from data.graph import ArcanGraphLoader
-from utils import get_versions
 
 warnings.filterwarnings('ignore')
+
+import shutup;
+
+shutup.please()
 
 
 def projects_level_labels(annotations):
@@ -23,8 +27,10 @@ def projects_level_labels(annotations):
         if not annotations[node]['unannotated'] and np.linalg.norm(annotations[node]['distribution']):
             res.append(annotations[node]['distribution'])
 
-    agg = np.mean(np.array(res), axis=0) / np.linalg.norm(res)
-
+    if res:
+        agg = np.mean(np.array(res), axis=0) / np.linalg.norm(res)
+    else:
+        agg = np.zeros(267)
     return agg
 
 
@@ -35,7 +41,6 @@ def annotate_nodes(graph, node_annotations, top_labels, label_map, k):
     for n in graph.vs:
         if n['labelV'] != 'container':
             tot += 1
-            n['plot_weight'] = 0
             out_edges = graph.incident(n, mode="out")
             assert len(out_edges) < 2
             if not out_edges:
@@ -48,8 +53,6 @@ def annotate_nodes(graph, node_annotations, top_labels, label_map, k):
 
                 g_id = group_map[target_vertex.index]
                 n['group'] = str(g_id)
-                # graph.vs[target_vertex.index]['group'] = str(g_id)
-                # n['p_label'] = str(graph.vs[target_vertex.index]['name'])
                 grouped += 1
 
         try:
@@ -124,31 +127,30 @@ def annotate_package(graph, package_annotations, top_labels, label_map, k):
     total = 0
     annotated = 0
     csv_rows = []
+    n = 267
     for n in graph.vs:
         if n['labelV'] == 'container':
             total += 1
             if n['name'] in package_annotations:
-                # typ = 'Code'
-                if 'test' in n['name']:
-                    continue
-                    # typ = 'Test'
-
-                annotated += 1
-                annot = package_annotations[n['name']]['all_distribution']
-                sorted_labels = np.argsort(annot)[::-1]
-
                 n['num_files'] = len([1 for x in graph.incident(n, mode="in") if graph.vs[x]['labelV'] == 'unit'])
 
-                y_labels = []
-                for i in sorted_labels[:]:
-                    y_labels.append(label_map[i])
-
+                annotated += 1
+                annot = package_annotations[n['name']]['clean_distribution']
                 annotated = False
-                for i in range(k):
-                    if y_labels[i] in top_labels:
-                        n['package_label'] = str(y_labels[i]).title()
-                        annotated = True
-                        break
+                if annot:
+
+                    sorted_labels = np.argsort(annot)[::-1]
+
+                    y_labels = []
+                    for i in sorted_labels[:]:
+                        y_labels.append(label_map[i])
+
+                    for i in range(k):
+                        if y_labels[i] in top_labels:
+                            n['package_label'] = str(y_labels[i]).title()
+                            annotated = True
+                            break
+
                 if not annotated:
                     n['package_label'] = str("Other")
 
@@ -159,16 +161,15 @@ def annotate_package(graph, package_annotations, top_labels, label_map, k):
 
 @hydra.main(config_path="../../src/conf", config_name="annotation", version_base="1.3")
 def annotate_graphml(cfg: DictConfig):
-    # project = "Waikato|weka-3.8"
-    # project = "apache|zookeeper"
     projects = glob.glob(join(cfg.annotations_path, '*.json'))
-    projects = [Path(n).name.split('-')[0] for n in projects]
+    projects = [Path(n).name.replace('.json', '').rsplit('-', 2) for n in projects]
     Path(cfg.labelled_graph_path).mkdir(parents=True, exist_ok=True)
     skipped = 0
     # projects = ['Waikato|weka-3.8', 'apache|zookeeper']
-    for project in tqdm(projects):
+    unannotated = 0
+    for project, num, sha in tqdm(projects):
         try:
-            num, sha = get_versions(project, cfg.arcan_graphs)[-1]
+            # num, sha = get_versions(project, cfg.arcan_graphs)[-1]
             graph_path = f"dependency-graph-{num}_{sha}.graphml"
 
             annot_path = join(cfg.annotations_path, f"{project}-{num}-{sha}.json")
@@ -185,24 +186,30 @@ def annotate_graphml(cfg: DictConfig):
                 label_map = json.load(outf)
             label_map = {label_map[l]: l for l in label_map}
             package_annotations = load_package_annotations(join(cfg.package_labels_path, 'annotations.json'), project)
+
             for k in [3, 5, 10]:
                 for t in [1, k]:
                     top_k = [label_map[i] for i in project_labels[:k]]
                     graph = annotate_nodes(graph, node_annotations, top_k, label_map, t)
-                    graph, csv_rows = annotate_package(graph, package_annotations, top_k, label_map, t)
-                    igraph.Graph.write_gml(graph, join(cfg.labelled_graph_path, f'{project}_top_{k}_assign_{t}.gml'))
-                    df = pd.DataFrame(csv_rows, columns=['name', 'weight', 'label'])
-                    df.to_csv(join(cfg.labelled_graph_path, f'{project}_top_{k}_assign_{t}.csv'))
-                    # df.to_csv(f'{project}_top_{k}_assign_{t}.csv')
+                    if package_annotations:
+                        graph, csv_rows = annotate_package(graph, package_annotations, top_k, label_map, t)
+                        df = pd.DataFrame(csv_rows, columns=['name', 'weight', 'label'])
+                        df.to_csv(join(cfg.labelled_graph_path, f'{project}_top_{k}_assign_{t}.csv'))
+                    else:
+                        unannotated += 1
+                igraph.Graph.write_gml(graph, join(cfg.labelled_graph_path, f'{project}_top_{k}_assign_{t}.gml'))
+
         except IndexError as e:
+            print(traceback.format_exc())
             skipped += 1
             continue
         except TypeError as e:
-            print(project)
+            print(traceback.format_exc())
             skipped += 1
             continue
 
-    print('Skipped', skipped)
+        print('Skipped', skipped)
+        print('Unannotated', unannotated)
 
 
 if __name__ == '__main__':

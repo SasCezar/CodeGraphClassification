@@ -2,6 +2,7 @@ import csv
 import json
 import os
 from os.path import join
+from pathlib import Path
 
 import hydra
 from omegaconf import DictConfig
@@ -19,39 +20,38 @@ def stats(cfg: DictConfig):
 
     settings = parse_settings(cfg.settings)
     annotation_path = join(cfg.package_labels_path, "annotations.json")
-    annotations = []
-    with open(annotation_path, 'rt') as f:
-        for line in f:
-            annotations.append(json.loads(line))
 
     filename = 'similarity_package_annotation_stats.csv'
     skip_header = False
     if os.path.exists(join(cfg.stats_dir, filename)):
         skip_header = True
-    os.makedirs(cfg.stats_dir, exist_ok=True)
-    with open(join(cfg.stats_dir, filename), 'at') as f:
+    out_path = Path(join(cfg.stats_dir))
+    out_path.mkdir(exist_ok=True, parents=True)
+    rows = 0
+    with open(join(out_path, filename), 'at') as f:
         writer = csv.writer(f)
         header = ['project', 'annotation', 'content', 'algorithm', 'transformation', 'filtering', 'threshold',
-                  'package', 'clean', 'jsd', 'cohesion', 'unannotated']
+                  'package', 'jsd', 'cohesion', 'cohesion_all', 'num_nodes', 'unannotated_nodes', 'unannotated']
 
         writer.writerow(header) if not skip_header else None
-        for project in annotations:
-            for package in project['packages']:
-                all_row = [package, '1']
-                clean_row = [package, '0']
-                all_row.append(project['packages'][package]['jsd_all'])
-                clean_row.append(project['packages'][package]['jsd_clean'])
+        with open(annotation_path, 'rt') as f:
+            for line in f:
+                project = json.loads(line)
+                rows += 1
+                for package in project['packages']:
+                    row = [package]
+                    row.append(project['packages'][package]['jsd_clean'])
 
-                all_row.append(project['packages'][package]['all_package_cohesion'])
-                clean_row.append(project['packages'][package]['clean_package_cohesion'])
+                    row.append(project['packages'][package]['clean_package_cohesion'])
+                    row.append(project['packages'][package]['all_package_cohesion'])
 
-                all_row.append(project['packages'][package]['percent_unannotated'])
-                clean_row.append(project['packages'][package]['percent_unannotated'])
+                    row.append(project['packages'][package]['num_nodes'])
+                    row.append(project['packages'][package]['percent_unannotated'])
+                    row.append(project['packages'][package]['unannotated'])
 
-                writer.writerow([project['project']] + settings + all_row)
-                writer.writerow([project['project']] + settings + clean_row)
+                    writer.writerow([project['project']] + settings + row)
 
-    print(len(annotations))
+    print(rows)
 
 
 if __name__ == '__main__':

@@ -11,6 +11,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 from feature.embedding import AbstractEmbeddingModel
 
+np.seterr(all='raise')
 
 class Annotation(ABC):
     def __init__(self, keywords_dir, annotations_path):
@@ -78,8 +79,9 @@ class SemanticSimilarityAnnotation(Annotation):
             print(f"Error in {name}")
             print(f"Content: {content}")
             print(f"Content vec: {content_vec}")
-        node_labels = sims[0]
-
+        sims = sims[0] + abs(min(sims))
+        norm = np.linalg.norm(sims)
+        node_labels = sims / norm if norm else sims
         return node_labels
 
     def embed_labels(self):
