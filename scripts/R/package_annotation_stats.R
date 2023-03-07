@@ -10,8 +10,8 @@ dt$threshold <- as.factor(dt$threshold)
 dt <- dt %>% 
   mutate(transformation = replace(transformation, transformation == 'single_label', 'single')) %>%
   mutate(transformation = replace(transformation, transformation == 'soft_label', 'soft')) %>%
-  mutate(filtering = replace(filtering, filtering == 'JSDivergence', 'JSD')) #%>%
-  #filter(annotation != 'similarity') #%>%
+  mutate(filtering = replace(filtering, filtering == 'JSDivergence', 'JSD')) %>%
+  filter(unannotated == 0) #%>%
   #mutate(cohesion = if_else(cohesion < 0, 0, cohesion))
 
 alpha=0.5
@@ -32,11 +32,12 @@ ggsave('/home/sasce/PycharmProjects/CodeGraphClassification/reports/plots/statis
 
 p <- ggplot(dt, aes(y = cohesion , x=threshold, fill = threshold, color=threshold)) +
   geom_violin(alpha=alpha,  show.legend = FALSE) +
+  geom_boxplot(width = width, fill="white",show.legend = FALSE) +
   facet_nested(~ annotation + content + algorithm + transformation) +
   theme(text = element_text(size = 12),
         axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
   xlab("Filtering Threshold") + ylab("Cohesion (%)") 
-#p
+p
 
 ggsave('/home/sasce/PycharmProjects/CodeGraphClassification/reports/plots/statistics/package_cohesion.pdf', width=9, height=4)
 
@@ -47,7 +48,7 @@ p <- ggplot(dt, aes(y = cohesion_all , x=threshold, fill = threshold, color=thre
   theme(text = element_text(size = 12),
         axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
   xlab("Filtering Threshold") + ylab("Cohesion ALL (%)") 
-#p
+p
 
 ggsave('/home/sasce/PycharmProjects/CodeGraphClassification/reports/plots/statistics/package_cohesion_all.pdf', width=9, height=4)
 
@@ -58,7 +59,7 @@ p <- ggplot(dt, aes(y = unannotated , x=threshold, fill = threshold, color=thres
   theme(text = element_text(size = 12),
         axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
   xlab("Filtering Threshold") + ylab("Unannotated (%)") 
-#p
+p
 
 ggsave('/home/sasce/PycharmProjects/CodeGraphClassification/reports/plots/statistics/package_unannotated_nodes.pdf', width=9, height=4)
 

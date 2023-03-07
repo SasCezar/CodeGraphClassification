@@ -16,7 +16,7 @@ from data.graph import ArcanGraphLoader
 
 warnings.filterwarnings('ignore')
 
-import shutup;
+import shutup
 
 shutup.please()
 
@@ -150,6 +150,9 @@ def annotate_package(graph, package_annotations, top_labels, label_map, k):
                             n['package_label'] = str(y_labels[i]).title()
                             annotated = True
                             break
+                else:
+                    n['package_label'] = str(-1)
+                    annotated = True
 
                 if not annotated:
                     n['package_label'] = str("Other")
@@ -167,6 +170,10 @@ def annotate_graphml(cfg: DictConfig):
     skipped = 0
     # projects = ['Waikato|weka-3.8', 'apache|zookeeper']
     unannotated = 0
+    label_mapping = join(cfg.annotations_dir, f"label_mapping.json")
+    with open(label_mapping, 'rt') as outf:
+        label_map = json.load(outf)
+    label_map = {label_map[l]: l for l in label_map}
     for project, num, sha in tqdm(projects):
         try:
             # num, sha = get_versions(project, cfg.arcan_graphs)[-1]
@@ -181,12 +188,10 @@ def annotate_graphml(cfg: DictConfig):
             graph = clean_edges(graph)
             graph = clean_nodes(graph)
             # graph = add_root(graph)
-            label_mapping = join(cfg.annotations_dir, f"label_mapping.json")
-            with open(label_mapping, 'rt') as outf:
-                label_map = json.load(outf)
-            label_map = {label_map[l]: l for l in label_map}
-            package_annotations = load_package_annotations(join(cfg.package_labels_path, 'annotations.json'), project)
 
+            package_annotations = load_package_annotations(join(cfg.package_labels_path, 'annotations.json'), project)
+            if not package_annotations:
+                unannotated += 1
             for k in [3, 5, 10]:
                 for t in [1, k]:
                     top_k = [label_map[i] for i in project_labels[:k]]
@@ -195,9 +200,8 @@ def annotate_graphml(cfg: DictConfig):
                         graph, csv_rows = annotate_package(graph, package_annotations, top_k, label_map, t)
                         df = pd.DataFrame(csv_rows, columns=['name', 'weight', 'label'])
                         df.to_csv(join(cfg.labelled_graph_path, f'{project}_top_{k}_assign_{t}.csv'))
-                    else:
-                        unannotated += 1
-                igraph.Graph.write_gml(graph, join(cfg.labelled_graph_path, f'{project}_top_{k}_assign_{t}.gml'))
+
+                    igraph.Graph.write_gml(graph, join(cfg.labelled_graph_path, f'{project}_top_{k}_assign_{t}.gml'))
 
         except IndexError as e:
             print(traceback.format_exc())
@@ -208,8 +212,8 @@ def annotate_graphml(cfg: DictConfig):
             skipped += 1
             continue
 
-        print('Skipped', skipped)
-        print('Unannotated', unannotated)
+    print('Skipped', skipped)
+    print('Unannotated', unannotated)
 
 
 if __name__ == '__main__':

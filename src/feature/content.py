@@ -2,7 +2,7 @@ import json
 import os
 import re
 from abc import abstractmethod, ABC
-from typing import Iterable
+from typing import Iterable, List, Union
 
 import igraph
 import sourcy
@@ -262,3 +262,26 @@ class JSONContentExtraction(ContentExtraction):
             return ""
 
         return text
+
+
+class PreComputedEmbeddingLoader(ContentExtraction):
+    def __init__(self, content_path: str = None):
+        super().__init__(content_path, None)
+        self.content_path = content_path
+        self.clone = False
+
+    def extract(self, project_name: str, sha: str = None, num: str = None, clean_graph: bool = False) -> Union[
+        str, List[float]]:
+        """
+        Extracts the content of the project.
+        """
+        vec_file = f"dependency-graph-{num}_{sha}.vec"
+        with open(os.path.join(self.content_path, project_name, vec_file), "r") as f:
+            for line in f:
+                node, vec = line.split(maxsplit=1)
+                yield node, vec
+
+        raise ValueError(f"Could not find {sha} in {project_name}")
+
+    def get_content(self, project: str, graph: igraph.Graph):
+        pass

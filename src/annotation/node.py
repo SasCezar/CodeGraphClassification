@@ -13,6 +13,7 @@ from feature.embedding import AbstractEmbeddingModel
 
 np.seterr(all='raise')
 
+
 class Annotation(ABC):
     def __init__(self, keywords_dir, annotations_path):
         self.keywords, self.weights, self.mapping = self.load_keywords(keywords_dir)
@@ -92,9 +93,32 @@ class SemanticSimilarityAnnotation(Annotation):
         return res
 
 
-class EnsembleAnnotation:
-    def __int__(self, methods):
-        self.ensemble_methods = methods
+class PrecomputedEmbeddingAnnotation(Annotation):
+    def __init__(self, keywords_dir, annotations_path, embedding: AbstractEmbeddingModel):
+        """
+        Embedding method for computing the labels embedding - Should be the same used for the content
+        """
+        super().__init__(keywords_dir, annotations_path)
+        self.embedding = embedding
+        self.label_vecs = self.embed_labels()
 
     def annotate(self, name, content):
-        pass
+        content_vec = content
+
+        try:
+            sims = cosine_similarity(content_vec, self.label_vecs)
+        except ValueError:
+            print(f"Error in {name}")
+            print(f"Content: {content}")
+            print(f"Content vec: {content_vec}")
+        sims = sims[0] + abs(min(sims))
+        norm = np.linalg.norm(sims)
+        node_labels = sims / norm if norm else sims
+        return node_labels
+
+    def embed_labels(self):
+        res = []
+        for label in self.mapping:
+            res.append(self.embedding.get_embedding(label.lower()))
+
+        return res

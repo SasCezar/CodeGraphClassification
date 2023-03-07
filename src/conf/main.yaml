@@ -5,9 +5,6 @@ defaults:
   - embedding: SantaCoder
   - local: default
   - dataset: gitranking
-  - model: GCN
-  - datamodule: gitranking
-
 
   - override hydra/hydra_logging: colorlog
   - override hydra/job_logging: colorlog

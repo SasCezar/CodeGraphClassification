@@ -3,10 +3,10 @@ library(treemap)
 
 project = 'apache|zookeeper'
 #project = 'Waikato|weka-3.8'
-top = '5'
+top = '3'
 asg = '1'
 
-dt <- read.csv(sprintf("/home/sasce/PycharmProjects/CodeGraphClassification/scripts/python/%s_top_%s_assign_%s.csv", project, top, asg))
+dt <- read.csv(sprintf("/home/sasce/PycharmProjects/CodeGraphClassification/data/processed/labelled_graph/keyword/identifiers/yake/none/none/%s_top_%s_assign_%s.csv", project, top, asg))
 
 treemap(dt,
         index=c("label","name"),

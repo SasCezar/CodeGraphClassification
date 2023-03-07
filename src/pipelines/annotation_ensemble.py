@@ -14,16 +14,39 @@ from tqdm import tqdm
 
 
 def load_lf_annotations(ensemble_functions):
-    res = defaultdict(lambda: defaultdict(list))
+    res = defaultdict(lambda: defaultdict(lambda: defaultdict(dict)))
     for lf in ensemble_functions:
         project_annotations = glob.glob(f'{lf}/*.json')
         for project_path in project_annotations:
             project = project_path.replace(lf, '').strip('/')
             with open(project_path, 'rt') as inf:
                 file_annotations = json.load(inf)
+            # for node in file_annotations:
+            #    res[project][node].append(file_annotations[node]['distribution'])
             for node in file_annotations:
-                res[project][node].append(file_annotations[node]['distribution'])
+                res[project][node][lf] = {'distribution': file_annotations[node]['distribution'],
+                                          'unannotated': file_annotations[node]['unannotated']}
 
+
+def load_project_annot(lf_functions, project):
+    res = defaultdict(lambda: defaultdict(dict))
+    for lf in lf_functions:
+        annot_path = Path(join(lf, project))
+        if annot_path.exists():
+            with open(annot_path, 'rt') as inf:
+                file_annotations = json.load(inf)
+            for node in file_annotations:
+                res[node][lf] = {'distribution': file_annotations[node]['distribution'],
+                                 'unannotated': file_annotations[node]['unannotated']}
+
+    return res
+
+
+def get_projects(lf_functions):
+    res = set()
+    for lf in lf_functions:
+        projs = [project_path.replace(lf, '').strip('/') for project_path in glob.glob(f'{lf}/*.json')]
+        res.update(projs)
     return res
 
 
@@ -35,15 +58,14 @@ def node_ensemble(cfg: DictConfig):
     """
 
     lf_functions = cfg.ensemble.labelling_functions
-    transformation = instantiate(cfg.transformation.cls) if cfg.transformation.cls else None
-    filtering = instantiate(cfg.filtering.cls) if cfg.filtering.cls else None
+    ensemble = instantiate(cfg.ensemble.cls)
 
-    annotations = load_lf_annotations(lf_functions)
-    projects = annotations.keys()
+    projects = get_projects(lf_functions)
     for project in tqdm(projects):
         try:
-            labels = compute_node_labels(annotations[project], transformation, filtering)
-            out_path = Path(join(cfg.annotations_dir, 'ensemble', 'best', project))
+            annotations = load_project_annot(lf_functions, project)
+            labels = compute_node_labels(annotations, ensemble)
+            out_path = Path(join(cfg.annotations_dir, 'ensemble', *cfg.ensemble.name.split('/'), 'none', project))
             out_path.parent.mkdir(parents=True, exist_ok=True)
 
             with open(out_path, 'w') as f:
@@ -56,20 +78,20 @@ def node_ensemble(cfg: DictConfig):
             continue
 
 
-def compute_node_labels(annotations, transform, filtering):
+def compute_node_labels(annotations, ensemble):
     node_labels = {}
     for node in annotations:
-        vec = np.max(annotations[node], axis=0)
+        vec, unannotated = ensemble.annotate(annotations[node])
         norm = np.linalg.norm(vec)
         if norm:
             vec = vec / norm
-        unannotated = 0
-
-        if filtering:
-            unannotated = filtering.filter(vec)
-
-        if transform:
-            vec = transform.transform(vec)
+        # unannotated = 0
+        #
+        # if filtering:
+        #     unannotated = filtering.filter(vec)
+        #
+        # if transform:
+        #     vec = transform.transform(vec)
 
         node_labels[node] = {'distribution': list(vec), "unannotated": unannotated}
 

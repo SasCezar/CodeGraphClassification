@@ -9,31 +9,32 @@ defaults:
   - node_annotation: keyword
   - filtering: none
   - transformation: none
-  - ensemble: best
+  - ensemble: cascade-best
   - override hydra/launcher: joblib
   - override hydra/hydra_logging: colorlog
   - override hydra/job_logging: colorlog
 
-num_workers: 4
+num_workers: 1
 
 hydra:
   launcher:
     n_jobs: ${num_workers}
-  sweeper:
-    params:
-      content: name, identifiers
-      node_annotation: keyword
-      #content: name
-      #embedding: SSO, BERT, fastText
-      #node_annotation: similarity
-      transformation: none,single_label,soft_label
-      filtering: none, jsd25, jsd50
+#  sweeper:
+#    params:
+#      content: name, identifiers
+#      node_annotation: keyword
+#      #content: name
+#      #embedding: SSO, BERT, fastText
+#      #node_annotation: similarity
+#      transformation: none,single_label,soft_label
+#      filtering: none, jsd25, jsd50
 
 
 force_new: False
 seed: 42
 
 settings: ${node_annotation.name}/${transformation.name}/${filtering.name}
+settings_ensemble: ensemble/${ensemble.name}/none
 project_path: ${base_path}/data/raw/dataset_with_graphs.csv
 content_dir: ${base_path}/data/processed/content/${content.name}
 keywords_dir: ${base_path}/data/processed/keywords/${content.name}/${keyword.name}
