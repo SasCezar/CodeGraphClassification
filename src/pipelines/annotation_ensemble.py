@@ -65,7 +65,8 @@ def node_ensemble(cfg: DictConfig):
         try:
             annotations = load_project_annot(lf_functions, project)
             labels = compute_node_labels(annotations, ensemble)
-            out_path = Path(join(cfg.annotations_dir, 'ensemble', *cfg.ensemble.name.split('/'), 'none', project))
+            out_path = Path(
+                join(cfg.annotations_dir, 'ensemble', *cfg.ensemble.name.split('/'), 'none', 'none', project))
             out_path.parent.mkdir(parents=True, exist_ok=True)
 
             with open(out_path, 'w') as f:
@@ -85,13 +86,6 @@ def compute_node_labels(annotations, ensemble):
         norm = np.linalg.norm(vec)
         if norm:
             vec = vec / norm
-        # unannotated = 0
-        #
-        # if filtering:
-        #     unannotated = filtering.filter(vec)
-        #
-        # if transform:
-        #     vec = transform.transform(vec)
 
         node_labels[node] = {'distribution': list(vec), "unannotated": unannotated}
 

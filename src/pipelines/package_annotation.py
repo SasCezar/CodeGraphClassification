@@ -104,27 +104,16 @@ def annotation_cohesion(package_annotations):
             continue
 
         clean_annot = package_annotations[package]['clean_nodes']
-
         if len(clean_annot) > 2:
             clean_jsd = pairwise_jsd(clean_annot)
             clean_mean = np.mean(clean_jsd)
-            all_mean = sum(clean_jsd) / package_annotations[package]['total']
         else:
             clean_mean = 1 / package_annotations[package]['total']
-            all_mean = 1 / package_annotations[package]['total']
-
-        if all_mean > 1:
-            print('Mean', all_mean)
-            print('Annot', clean_annot)
-            print('Total', package_annotations[package]['total'])
 
         if not np.isfinite(clean_mean):
             clean_mean = 0
-        if not np.isfinite(all_mean):
-            all_mean = 0
 
-        res[package] = {'clean_package_cohesion': clean_mean,
-                        'all_package_cohesion': all_mean}
+        res[package] = {'clean_package_cohesion': clean_mean}
 
     return res
 

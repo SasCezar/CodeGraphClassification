@@ -12,13 +12,12 @@ dt <- dt %>%
   mutate(transformation = replace(transformation, transformation == 'soft_label', 'soft')) %>%
   mutate(filtering = replace(filtering, filtering == 'JSDivergence', 'JSD'))
 
-  
 alpha=0.5
 width=0.15
 
 p <- ggplot(dt, aes(y = jsd , x=threshold, fill = threshold, color=threshold)) +
   geom_violin(alpha=alpha, show.legend = FALSE) +
-  geom_boxplot(width = width, fill="white",show.legend = FALSE) +
+  geom_boxplot(width = width, fill="white", show.legend = FALSE) +
   facet_nested(~ annotation + content + algorithm + transformation)+
   theme(text = element_text(size = 12),
         axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +

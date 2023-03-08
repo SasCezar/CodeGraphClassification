@@ -1,7 +1,8 @@
-name: 'jsd/best'
+name: 'best/jsd'
 cls:
   _target_: ensemble_annotations.cascade.CascadeEnsemble
 
 labelling_functions:
-  - /home/sasce/PycharmProjects/CodeGraphClassification/data/processed/annotations/keyword/identifiers/yake/none/JSDivergence/0.5/
-  - /home/sasce/PycharmProjects/CodeGraphClassification/data/processed/annotations/keyword/name/yake/none/none
+  - ${annotations_dir}/keyword/identifiers/yake/none/JSDivergence/0.25/
+  - ${annotations_dir}/keyword/name/yake/none/none
+  - ${annotations_dir}/similarity/name/w2v-so/none/none

@@ -33,8 +33,8 @@ hydra:
 force_new: False
 seed: 42
 
-settings: ${node_annotation.name}/${transformation.name}/${filtering.name}
-settings_ensemble: ensemble/${ensemble.name}/none
+#settings: ${node_annotation.name}/${transformation.name}/${filtering.name}
+settings: ensemble/${ensemble.name}/none/none
 project_path: ${base_path}/data/raw/dataset_with_graphs.csv
 content_dir: ${base_path}/data/processed/content/${content.name}
 keywords_dir: ${base_path}/data/processed/keywords/${content.name}/${keyword.name}
