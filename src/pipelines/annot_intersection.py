@@ -83,7 +83,7 @@ def pairwise_intersections(cfg: DictConfig):
     print(len(pairs))
 
     lf_annot = load_annot_all(files)
-    res = Parallel(n_jobs=10, prefer="processes")(delayed(lf_intersections)(a, b, lf_annot) for a, b in tqdm(pairs))
+    res = Parallel(n_jobs=10)(delayed(lf_intersections)(a, b, lf_annot) for a, b in tqdm(pairs))
     conflicts = pd.concat(res)
 
     conflicts.to_csv('node_annot_intersection.csv', index=False)
@@ -96,7 +96,7 @@ def node_intersection(proj_a, proj_b):
 
     for file in all_nodes:
         if bool(file in proj_a and proj_a[file]['unannotated']) \
-                ^ bool(file in proj_b and proj_b[file]['unannotated']):
+                and bool(file in proj_b and not proj_b[file]['unannotated']):
             annotated += 1
 
     return annotated / len(all_nodes) * 100

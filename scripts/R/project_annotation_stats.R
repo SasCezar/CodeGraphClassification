@@ -10,7 +10,10 @@ dt$threshold <- as.factor(dt$threshold)
 dt <- dt %>% 
   mutate(transformation = replace(transformation, transformation == 'single_label', 'single')) %>%
   mutate(transformation = replace(transformation, transformation == 'soft_label', 'soft')) %>%
-  mutate(filtering = replace(filtering, filtering == 'JSDivergence', 'JSD'))
+  mutate(filtering = replace(filtering, filtering == 'JSDivergence', 'JSD')) %>%
+  filter(algorithm != 'exp_voting') %>%
+  filter(algorithm != 'max')
+
 
 alpha=0.5
 width=0.15

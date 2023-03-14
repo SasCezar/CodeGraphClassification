@@ -43,7 +43,7 @@ def stats(cfg: DictConfig):
                     row.append(project['packages'][package]['jsd_clean'])
 
                     row.append(project['packages'][package]['clean_package_cohesion'])
-                    row.append(project['packages'][package]['all_package_cohesion'])
+                    row.append(0)
 
                     row.append(project['packages'][package]['num_nodes'])
                     row.append(project['packages'][package]['percent_unannotated'])
