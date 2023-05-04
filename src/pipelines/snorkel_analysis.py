@@ -65,8 +65,8 @@ def make_matrix(projects, lf_annot, mapping):
 def load_files(path):
     files = glob.glob(path + '/**/*.json', recursive=True)
     files = [(x, x.replace(path, '').replace('/annotations.json', '')) for x in files if
-             'single_label' not in x and 'soft_label' not in x and
-             'ensemble' not in x]  # and ('w2v-so' in x or 'keyword' in x)]
+             'single_label' not in x and 'soft_label' not in x]  # and
+    # 'ensemble' not in x]  # and ('w2v-so' in x or 'keyword' in x)]
     return files
 
 
@@ -220,7 +220,7 @@ def pairwise_stats(cfg: DictConfig):
                            'y_annotation', 'y_content', 'y_algorithm', 'y_transformation', 'y_filtering', 'y_threshold',
                            'k'])['agreement', 'agreement_percent'].mean()
     aggregated.reset_index(inplace=True)
-    aggregated.to_csv('aggregated_agreement_all.csv', index=False)
+    aggregated.to_csv('aggregated_agreement_ensamble.csv', index=False)
 
 
 def lf_agreement(a, b, lf_annot):

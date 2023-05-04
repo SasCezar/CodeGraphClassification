@@ -9,6 +9,7 @@ import hydra
 import numpy as np
 import pandas as pd
 from omegaconf import DictConfig
+from pandas import DataFrame
 
 
 def select_projects(file):
@@ -52,9 +53,11 @@ def load_package_annot(path, projects, best, mapping):
                     for i in sorted_labels[:10]:
                         y_labels.append(mapping[i]) if mapping[i] in best[proj['project']] else None
 
-                    packages_annot[package] = y_labels
+                    if y_labels:
+                        packages_annot[package] = y_labels
 
-                annot[proj['project']] = packages_annot
+                if packages_annot:
+                    annot[proj['project']] = packages_annot
 
     return annot
 
@@ -97,14 +100,14 @@ def build_df_other(annotations, level):
             labels = annotations[project][unit][:top]
             if len(labels) < top:
                 labels.extend([''] * (top - len(labels)))
-            url = f'https://github.com/{project.replace("|", "/")}/tree/master/{unit}'
-            row = [project, unit, url] + labels
+            url = f'https://github.com/{project.replace("|", "/")}'
+            row = [project, url, unit] + labels
             tpl = tuple(row)
 
             tuples.append(tpl)
 
     lheader = [f'label_{i + 1}' for i in range(top)]
-    header = ['project', level, 'url'] + lheader
+    header = ['project', 'url', level] + lheader
     df = pd.DataFrame(tuples, columns=header)
     return df
 
@@ -115,10 +118,11 @@ def build_df_project(annotations):
         labels = annotations[project]['pred'][:10]
         for label in labels:
             if label not in annotations[project]['true']:
-                tpl = (project, label)
+                url = f'https://github.com/{project.replace("|", "/")}'
+                tpl = (project, url, label)
                 tuples.append(tpl)
 
-    df = pd.DataFrame(tuples, columns=['project', 'label'])
+    df = pd.DataFrame(tuples, columns=['project', 'url', 'label'])
     return df
 
 
@@ -126,7 +130,7 @@ def assign_annotator(annotators, elements):
     res = []
     num = elements // annotators
     last = None
-    for a in string.ascii_lowercase[:annotators]:
+    for a in string.ascii_uppercase[:annotators]:
         res.extend([a] * num)
         last = a
 
@@ -134,6 +138,33 @@ def assign_annotator(annotators, elements):
         res.append([last] * abs(len(res) - elements))
 
     return res
+
+
+def assign_annotators(annotators, package_level_pred, k=2):
+    pred_w_annot = []
+    annot_pack = assign_annotator(annotators, len(package_level_pred))
+    for i in range(k):
+        packag_pred = package_level_pred.copy(deep=True)
+        annot_pack = deque(annot_pack)
+        annot_pack.rotate(len(package_level_pred) // annotators)
+        packag_pred['annotator'] = list(annot_pack)
+        pred_w_annot.append(packag_pred)
+
+    pred_w_annot = pd.concat(pred_w_annot)
+    return pred_w_annot
+
+
+def to_xlsl(df, filename):
+    writer = pd.ExcelWriter(filename)
+    df['url'] = df['url'].apply(lambda x: make_hyperlink(x))
+
+    for group, data in df.groupby('annotator'):
+        data.to_excel(writer, sheet_name=group)
+    writer.save()
+
+
+def make_hyperlink(url):
+    return f'=HYPERLINK("{url}", "{url}")'
 
 
 @hydra.main(config_path="../../src/conf", config_name="annotation", version_base="1.2")
@@ -146,13 +177,12 @@ def build(cfg: DictConfig):
     projects_annot, best = load_annot(proj_paths, projects)
     project_level_pred = build_df_project(projects_annot)
 
-    annot_proj = assign_annotator(annotators, len(project_level_pred))
-    project_level_pred['annotator'] = annot_proj
-    annot_proj_2 = deque(annot_proj)
-    annot_proj_2.rotate(len(project_level_pred) // annotators)
-    project_level_pred['annotator_2'] = list(annot_proj_2)
+    project_level_pred_annot = assign_annotators(annotators, project_level_pred)
 
-    project_level_pred.to_csv('project_human_eval.csv')
+    project_filename = f'project_human_eval_{cfg.ensemble.name.replace("/", "-")}.csv'
+    project_level_pred_annot.to_csv(project_filename)
+
+    to_xlsl(project_level_pred_annot, project_filename.replace('csv', 'xlsx'))
 
     label_mapping = join(cfg.annotations_dir, f"label_mapping.json")
 
@@ -161,34 +191,28 @@ def build(cfg: DictConfig):
 
     label_map = {v: k for k, v in label_map.items()}
 
-    projects = projects[:10]
+    # projects = projects[:10]
     package_annot = load_package_annot(join(cfg.package_labels_path, 'annotations.json'), projects, best, label_map)
-    package_level_pred = build_df_other(package_annot, 'package')
-    package_level_pred = package_level_pred.groupby('project').sample(n=100, random_state=1)
+    package_level_pred: DataFrame = build_df_other(package_annot, 'package')
+    package_level_pred = package_level_pred.groupby('project').sample(n=10, random_state=1)
     package_level_pred.reset_index(drop=True, inplace=True)
 
-    annot_pack = assign_annotator(annotators, len(package_level_pred))
-    package_level_pred['annotator'] = annot_pack
+    package_level_pred_annot = assign_annotators(annotators, package_level_pred)
 
-    annot_pack_2 = deque(annot_pack)
-    annot_pack_2.rotate(len(package_level_pred) // annotators)
-    package_level_pred['annotator_2'] = list(annot_pack_2)
+    package_filename = f'package_human_eval_{cfg.ensemble.name.replace("/", "-")}.csv'
+    package_level_pred_annot.to_csv(package_filename)
 
-    package_level_pred.to_csv('package_human_eval.csv')
+    to_xlsl(package_level_pred_annot, package_filename.replace('csv', 'xlsx'))
 
     file_annot = load_file_annot(cfg.annotations_path, projects, best, label_map)
     file_level_pred = build_df_other(file_annot, 'file')
-    file_level_pred = file_level_pred.groupby('project').sample(n=100, random_state=1)
+    file_level_pred = file_level_pred.groupby('project').sample(n=10, random_state=1)
     file_level_pred.reset_index(drop=True, inplace=True)
 
-    annot_file = assign_annotator(annotators, len(file_level_pred))
-    file_level_pred['annotator'] = annot_file
-
-    annot_file_2 = deque(annot_pack)
-    annot_file_2.rotate(len(file_level_pred) // annotators)
-    file_level_pred['annotator_2'] = list(annot_file_2)
-
-    file_level_pred.to_csv('file_human_eval.csv')
+    file_level_pred_annot = assign_annotators(annotators, file_level_pred)
+    file_filename = f'file_human_eval_{cfg.ensemble.name.replace("/", "-")}.csv'
+    file_level_pred_annot.to_csv(file_filename)
+    to_xlsl(file_level_pred_annot, file_filename.replace('csv', 'xlsx'))
 
 
 if __name__ == '__main__':

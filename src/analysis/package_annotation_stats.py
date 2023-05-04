@@ -31,7 +31,7 @@ def stats(cfg: DictConfig):
     with open(join(out_path, filename), 'at') as f:
         writer = csv.writer(f)
         header = ['project', 'annotation', 'content', 'algorithm', 'transformation', 'filtering', 'threshold',
-                  'package', 'jsd', 'cohesion', 'cohesion_all', 'num_nodes', 'unannotated_nodes', 'unannotated']
+                  'package', 'jsd', 'cohesion', 'num_nodes', 'unannotated_nodes', 'unannotated']
 
         writer.writerow(header) if not skip_header else None
         with open(annotation_path, 'rt') as f:
@@ -43,10 +43,14 @@ def stats(cfg: DictConfig):
                     row.append(project['packages'][package]['jsd_clean'])
 
                     row.append(project['packages'][package]['clean_package_cohesion'])
-                    row.append(0)
-
-                    row.append(project['packages'][package]['num_nodes'])
-                    row.append(project['packages'][package]['percent_unannotated'])
+                    num_nodes = project['packages'][package]['num_nodes']
+                    if not num_nodes:
+                        num_nodes = 0
+                    row.append(num_nodes)
+                    percent_unannotated = project['packages'][package]['percent_unannotated']
+                    if not percent_unannotated:
+                        percent_unannotated = 0
+                    row.append(percent_unannotated)
                     row.append(project['packages'][package]['unannotated'])
 
                     writer.writerow([project['project']] + settings + row)

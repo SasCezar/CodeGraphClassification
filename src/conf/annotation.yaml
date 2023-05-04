@@ -9,7 +9,7 @@ defaults:
   - node_annotation: keyword
   - filtering: none
   - transformation: none
-  - ensemble: cascade-best
+  - ensemble: voting-best
   - override hydra/launcher: joblib
   - override hydra/hydra_logging: colorlog
   - override hydra/job_logging: colorlog
