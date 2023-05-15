@@ -168,12 +168,14 @@ def annotate_graphml(cfg: DictConfig):
     projects = [Path(n).name.replace('.json', '').rsplit('-', 2) for n in projects]
     Path(cfg.labelled_graph_path).mkdir(parents=True, exist_ok=True)
     skipped = 0
-    # projects = ['Waikato|weka-3.8', 'apache|zookeeper']
+    filter = ['Waikato|weka-3.8', 'apache|zookeeper', 'mickleness|pumpernickel']
+    projects = [x for x in projects if x[0] in filter]
     unannotated = 0
     label_mapping = join(cfg.annotations_dir, f"label_mapping.json")
     with open(label_mapping, 'rt') as outf:
         label_map = json.load(outf)
     label_map = {label_map[l]: l for l in label_map}
+    sankey = []
     for project, num, sha in tqdm(projects):
         try:
             # num, sha = get_versions(project, cfg.arcan_graphs)[-1]
@@ -192,16 +194,41 @@ def annotate_graphml(cfg: DictConfig):
             package_annotations = load_package_annotations(join(cfg.package_labels_path, 'annotations.json'), project)
             if not package_annotations:
                 unannotated += 1
-            for k in [3, 5, 10]:
+            sankey = []
+
+            for k in [3, 5, 10, 20]:
                 for t in [1, k]:
                     top_k = [label_map[i] for i in project_labels[:k]]
                     graph = annotate_nodes(graph, node_annotations, top_k, label_map, t)
                     if package_annotations:
                         graph, csv_rows = annotate_package(graph, package_annotations, top_k, label_map, t)
                         df = pd.DataFrame(csv_rows, columns=['name', 'weight', 'label'])
-                        df.to_csv(join(cfg.labelled_graph_path, f'{project}_top_{k}_assign_{t}.csv'))
+                        if t == k:
+                            if k == 3:
+                                for name, label, weight in zip(df['name'], df['label'], df['weight']):
+                                    row = [0, name, '-1']
+                                    sankey.append(row)
+                                    # for i in range(weight):
+                                    #    sankey.append(row)
+                            for name, label, weight in zip(df['name'], df['label'], df['weight']):
+                                row = [k, name, label]
+                                sankey.append(row)
+                                # for i in range(weight):
+                                #    sankey.append(row)
 
+                        df.to_csv(join(cfg.labelled_graph_path, f'{project}_top_{k}_assign_{t}.csv'))
                     igraph.Graph.write_gml(graph, join(cfg.labelled_graph_path, f'{project}_top_{k}_assign_{t}.gml'))
+
+            sankey = pd.DataFrame(sankey, columns=['k', 'name', 'label'])
+            sankey = sankey.groupby('name').agg({'label': [
+                ('0', lambda x: x.iloc[0]),
+                ('3', lambda x: x.iloc[1]),
+                ('5', lambda x: x.iloc[2]),
+                ('10', lambda x: x.iloc[3]),
+                ('20', lambda x: x.iloc[4]),
+            ]}).reset_index()
+            sankey.columns = ['annot_id'] + ['at0', 'at3', 'at5', 'at10', 'at20']
+            sankey.to_csv(f'sankey_{project}.csv', index=False)
 
         except IndexError as e:
             print(traceback.format_exc())

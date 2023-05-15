@@ -12,17 +12,16 @@ dt <- dt %>%
   mutate(cohesion = replace(cohesion, TRUE, 1-cohesion)) %>%
   mutate(transformation = replace(transformation, transformation == 'single_label', 'T1')) %>%
   mutate(transformation = replace(transformation, transformation == 'soft_label', 'Tp')) %>%
+  mutate(transformation = replace(transformation, transformation == 'none', 'RAW')) %>%
   mutate(annotation = stringr::str_to_title(annotation)) %>%
   mutate(content = stringr::str_to_title(content)) %>%
-  mutate(transformation = stringr::str_to_title(transformation)) %>%
   mutate(algorithm = replace(algorithm, algorithm == 'yake', 'Yake')) %>%
   mutate(algorithm = replace(algorithm, algorithm == 'w2v-so', 'W2V-SO')) %>%
-  mutate(algorithm = replace(algorithm, algorithm == 'cascade', 'Cascade')) %>%
-  mutate(algorithm = replace(algorithm, algorithm == 'voting', 'Voting')) %>%
+  mutate(algorithm = replace(algorithm, algorithm == 'cascade', 'CSC')) %>%
+  mutate(algorithm = replace(algorithm, algorithm == 'voting', 'VT')) %>%
   filter(algorithm != 'exp_voting') %>%
   filter(algorithm != 'max') %>%
   mutate(annotation = fct_relevel(annotation, 'Keyword', 'Similarity', 'Ensemble'))
-
 
 alpha=0.5
 width=0.3

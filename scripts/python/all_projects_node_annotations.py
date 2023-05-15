@@ -18,7 +18,7 @@ projects_map = {'Waikato|weka-3.8-903-04804ccd6dff03534cbf3f2a71a35c73eef24fe8.c
 
 method = 'name'
 
-with open(f"/home/sasce/PycharmProjects/CodeGraphClassification/data/processed/annotations/{method}/label_mapping.json",
+with open(f"{cfg.base_path}/data/processed/annotations/{method}/label_mapping.json",
           'rt') as inf:
     label_map = json.load(inf)
 
@@ -36,6 +36,5 @@ proj_labs = []
 for p, i, m in proj_mean:
     proj_labs.extend([[p, i]] * int(m * 100))
 mean_df = pandas.DataFrame(proj_labs, columns=['project', 'label'])
-mean_df.to_csv(
-    f"/home/sasce/PycharmProjects/CodeGraphClassification/data/processed/annotations/{method}/projects_mean.csv",
-    index=False, header=True)
+mean_df.to_csv(f"{cfg.base_path}/data/processed/annotations/{method}/projects_mean.csv",
+               index=False, header=True)

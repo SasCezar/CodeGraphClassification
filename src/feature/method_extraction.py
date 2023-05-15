@@ -4,6 +4,7 @@ from typing import List, Iterable
 
 import igraph
 import tree_sitter
+from hydra import initialize, compose
 from loguru import logger
 from tree_sitter import Parser
 from tree_sitter.binding import Tree, Node
@@ -55,7 +56,11 @@ class MethodContentExtraction(ContentExtraction):
     def __init__(self, graph_path: str = None,
                  repo_path: str = None, stopwords: Iterable = None):
         super().__init__(graph_path, stopwords)
-        lang = tree_sitter.Language('/home/sasce/PycharmProjects/CodeGraphClassification/languages.so', 'java')
+
+        # Dirty fix for loading the tree-sitter language file
+        with initialize(version_base=None, config_path="../../src/conf/"):
+            cfg = compose(config_name='annotation.yaml')
+        lang = tree_sitter.Language(f'{cfg.base_path}/languages.so', 'java')
         self.parser = Parser()
         self.parser.set_language(lang)
 

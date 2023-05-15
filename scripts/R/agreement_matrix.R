@@ -17,15 +17,15 @@ dt <- dt %>%
   mutate(x_transformation = stringr::str_to_title(x_transformation)) %>%
   mutate(x_algorithm = replace(x_algorithm, x_algorithm == 'yake', 'Yake')) %>%
   mutate(x_algorithm = replace(x_algorithm, x_algorithm == 'w2v-so', 'W2V-SO')) %>%
-  mutate(x_algorithm = replace(x_algorithm, x_algorithm == 'cascade', 'Cascade')) %>%
-  mutate(x_algorithm = replace(x_algorithm, x_algorithm == 'voting', 'Voting')) %>% 
+  mutate(x_algorithm = replace(x_algorithm, x_algorithm == 'cascade', 'CSC')) %>%
+  mutate(x_algorithm = replace(x_algorithm, x_algorithm == 'voting', 'VT')) %>% 
   mutate(y_annotation = stringr::str_to_title(y_annotation)) %>%
   mutate(y_content = stringr::str_to_title(y_content)) %>%
   mutate(y_transformation = stringr::str_to_title(y_transformation)) %>%
   mutate(y_algorithm = replace(y_algorithm, y_algorithm == 'yake', 'Yake')) %>%
   mutate(y_algorithm = replace(y_algorithm, y_algorithm == 'w2v-so', 'W2V-SO')) %>%
-  mutate(y_algorithm = replace(y_algorithm, y_algorithm == 'cascade', 'Cascade')) %>%
-  mutate(y_algorithm = replace(y_algorithm, y_algorithm == 'voting', 'Voting'))
+  mutate(y_algorithm = replace(y_algorithm, y_algorithm == 'cascade', 'CSC')) %>%
+  mutate(y_algorithm = replace(y_algorithm, y_algorithm == 'voting', 'VT'))
 dt <- dt %>% mutate(x_annotation = fct_relevel(x_annotation, 'Keyword', 'Similarity', 'Ensemble'))
 dt <- dt %>% mutate(y_annotation = fct_relevel(y_annotation, 'Keyword', 'Similarity', 'Ensemble')) 
 
@@ -41,7 +41,7 @@ p <- ggplot(dt, aes(fill=agreement_percent, ymax=1, ymin=0, xmax=agreement_perce
         axis.text.x = element_blank(),
         axis.ticks.y = element_blank(),
         axis.text.y = element_blank(),
-        text = element_text(size = 16),
+        text = element_text(size = 18),
         legend.key.width = unit(2.5, "cm"),
         legend.position="bottom") +
   scale_fill_gradientn(colours=paletteer_c("viridis::plasma", 10)) +

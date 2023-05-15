@@ -53,7 +53,7 @@ def others_group_annotations(df, level='file'):
                        ('annotation2', lambda x: x.iloc[1])]}).reset_index()
 
     df_grouped.columns = list(map(lambda x: x[0] if x[1] in ['list', 'first'] else x[1], df_grouped.columns.values))
-    df_grouped.columns = ['name'] + list(df_grouped.columns.values)[1:]
+    df_grouped.columns = ['annot_id'] + list(df_grouped.columns.values)[1:]
     return df_grouped
 
 
@@ -125,6 +125,7 @@ def evaluation(cfg: DictConfig):
         disagreement_df = load_disagreement(disagreement_files[level])
         grouped_df = grouping[level](df, level)
         resolved_df = join_disagreement(grouped_df, disagreement_df)
+        resolved_df.to_csv(join(cfg.out_path, f'processed/manual_eval/{level}_annotation_combined.csv'), index=False)
         print(level, kappa, len(disagreement_df) / len(grouped_df), len(grouped_df))
 
         scores[level].update(resolved_df['final'])
@@ -143,15 +144,15 @@ def evaluation(cfg: DictConfig):
             count = Counter()
             count.update(result)
             result = pd.DataFrame(count.most_common(), columns=['num', 'count'])
-            result.to_csv('/home/sasce/PycharmProjects/CodeGraphClassification/output/stats/LF_project_new_topics.csv',
+            result.to_csv(f'{cfg.base_path}/output/stats/LF_project_new_topics.csv',
                           index=False)
 
     results_df = pd.DataFrame(results, columns=['level', 'group', 'label', 'num', 'percent'])
-    results_df.to_csv('/home/sasce/PycharmProjects/CodeGraphClassification/output/stats/human_eval_results.csv',
+    results_df.to_csv(f'{cfg.base_path}/output/stats/human_eval_results.csv',
                       index=False)
 
     agreements_df = pd.DataFrame(agreements, columns=['level', 'metric', 'score'])
-    agreements_df.to_csv('/home/sasce/PycharmProjects/CodeGraphClassification/output/stats/human_eval_agreement.csv',
+    agreements_df.to_csv(f'{cfg.base_path}/output/stats/human_eval_agreement.csv',
                          index=False)
 
 

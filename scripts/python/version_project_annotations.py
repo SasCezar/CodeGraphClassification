@@ -6,12 +6,13 @@ import pandas
 from hydra import initialize, compose
 
 with initialize(version_base=None, config_path="../../src/conf/"):
-    cfg = compose(config_name='node_annotation.yaml', overrides=["local=default"])
+    cfg = compose(config_name='annotation.yaml', overrides=["local=default"])
 
-projects = sorted(glob.glob("/home/sasce/PycharmProjects/CodeGraphClassification/data/processed/annotations/name/*weka*.csv"), key=lambda x: int(x.split('-')[-2]))
+projects = sorted(glob.glob(f"{cfg.base_path}/processed/annotations/name/*weka*.csv"),
+                  key=lambda x: int(x.split('-')[-2]))
 method = 'name'
 
-with open(f"/home/sasce/PycharmProjects/CodeGraphClassification/data/processed/annotations/{method}/label_mapping.json",
+with open(f"{cfg.base_path}/data/processed/annotations/{method}/label_mapping.json",
           'rt') as inf:
     label_map = json.load(inf)
 
@@ -28,5 +29,5 @@ for p, i, m in proj_mean:
     proj_labs.extend([[p, i]] * int(m * 100))
 mean_df = pandas.DataFrame(proj_labs, columns=['project', 'label', ])
 mean_df.to_csv(
-    f"/home/sasce/PycharmProjects/CodeGraphClassification/data/processed/weka-java_versions.csv",
+    f"{cfg.base_path}/data/processed/weka-java_versions.csv",
     index=False, header=True)

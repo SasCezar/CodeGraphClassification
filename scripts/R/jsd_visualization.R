@@ -15,10 +15,10 @@ p <- ggplot(dt, aes(x=x, fill=funct)) +
   scale_y_continuous(limits = c(0,.17), expand = c(0.001, 0.001)) +
   #scale_fill_paletteer_d("ggthemes::wsj_dem_rep") +
   scale_fill_manual(values=color_palette) +
-  theme(panel.background = element_blank(),text = element_text(size = 16), 
+  theme(panel.background = element_blank(),text = element_text(size = 18), 
         legend.position = c(0.94, 0.8),
-        legend.title=element_text(size=14), 
-        legend.text=element_text(size=14)) +
+        legend.title=element_text(size=16), 
+        legend.text=element_text(size=16)) +
   xlab("Label") + ylab("Probability") + labs(fill = "Distribution")
 
 p
