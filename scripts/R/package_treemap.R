@@ -12,7 +12,6 @@ asg = '1'
 
 for (project in projects) {
   x <- distinct_palette(n = 20, pal = "brewerPlus")
-  t <- sample(x, 21)
   for (top in tops) {
     dt <- read.csv(sprintf("/home/sasce/PycharmProjects/CodeGraphClassification/data/processed/labelled_graph/ensemble/best/voting/none/none/%s_top_%s_assign_%s.csv", project, top, asg))
     dt <- dt %>% 
@@ -25,7 +24,7 @@ for (project in projects) {
                   index=c("label", "name"),
                   vSize="weight",
                   type="index",
-                  palette = t,                        # Select your color palette from the RColorBrewer presets or make your own.
+                  palette = x,                        # Select your color palette from the RColorBrewer presets or make your own.
                   title='',                      # Customize your title
                   fontsize.labels=c(22,18),                # size of labels. Give the size per level of aggregation: size for group, size for subgroup, sub-subgroups...
                   fontcolor.labels=c("white","black"),    # Color of labels
