@@ -1,12 +1,12 @@
-<<<<<<< HEAD
-
 # CodeGraphClassification
 
-This is the official repository of the paper: **_CodeGraphClassification: Classification of Source Code Repositories_**
+This is the official repository of the paper: **_Multi-granular Software Labelling using
+File-level Weak Labelling_**
 
 ## Data
 
-The data for this work is available at the following link:
+The data for this work is available at the following
+link: [https://zenodo.org/record/7943882](https://zenodo.org/record/7943882)
 
 **NOTE:** The compressed data is 25GB, when uncompressed, it will use around 198GB of your disk.
 
