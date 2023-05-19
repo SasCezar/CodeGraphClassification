@@ -1,3 +1,0 @@
-name: rake
-cls:
-  _target_: src.model.pna.PNA
