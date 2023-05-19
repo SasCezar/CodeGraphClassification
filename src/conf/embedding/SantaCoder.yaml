@@ -1,0 +1,5 @@
+name: SantaCoder
+cls:
+  _target_: src.feature.embedding.HuggingFaceEmbedding
+  model: "bigcode/santacoder"
+  name: ${..name}

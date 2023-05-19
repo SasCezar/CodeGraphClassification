@@ -1,4 +1,0 @@
-name: rake
-cls:
-  _target_: src.model.gat.GATNetwork
-  hidden_channels: 256

@@ -1,0 +1,9 @@
+name: 'best/max'
+cls:
+  _target_: ensemble_annotations.max.MaxEnsemble
+
+labelling_functions:
+  - ${annotations_dir}/keyword/identifiers/yake/none/JSDivergence/0.50/
+  - ${annotations_dir}/keyword/identifiers/yake/none/JSDivergence/0.25/
+  - ${annotations_dir}/keyword/name/yake/none/none
+  - ${annotations_dir}/similarity/name/w2v-so/none/none

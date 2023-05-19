@@ -1,0 +1,5 @@
+name: PolyCoder-L
+cls:
+  _target_: src.feature.embedding.SentenceTransformersEmbedding
+  model: "NinedayWang/PolyCoder-2.7B"
+  name: ${..name}

@@ -1,0 +1,6 @@
+name: methods
+cls:
+  _target_: src.feature.method_extraction.MethodContentExtraction
+  graph_path: ${arcan_graphs}
+  stopwords: None
+  repo_path: ${base_path}/data/raw/repositories/

@@ -1,0 +1,5 @@
+name: keyword/${content.name}/${keyword.name}
+cls:
+  _target_: src.annotation.node.KeywordAnnotation
+  keywords_dir: ${keywords_dir}
+  annotations_path: ${annotations_dir}

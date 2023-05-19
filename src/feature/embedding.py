@@ -1,3 +1,4 @@
+import re
 from abc import ABC, abstractmethod
 
 import fasttext as ft
@@ -6,6 +7,7 @@ import numpy as np
 import spacy
 import torch
 from gensim.models import KeyedVectors
+from sentence_transformers import SentenceTransformer
 from transformers import BertModel, BertTokenizer
 
 
@@ -82,12 +84,37 @@ class W2VEmbedding(AbstractEmbeddingModel):
         :return:
         """
         embeddings = []
+        if not text:
+            embeddings.append(np.zeros(self.model.vector_size))
         for word in str(text).split():
             if word in self.model:
                 embeddings.append(self.model[word])
             else:
                 embeddings.append(np.zeros(self.model.vector_size))
         return numpy.mean(embeddings, axis=0)
+
+
+class SplitW2VEmbedding(W2VEmbedding):
+    def get_embedding(self, text: str) -> numpy.ndarray:
+        """
+        Returns the embedding of the text.
+        :param text:
+        :return:
+        """
+        embeddings = []
+        if not text:
+            embeddings.append(np.zeros(self.model.vector_size))
+        for word in self.split_camel(str(text)):
+            if word in self.model:
+                embeddings.append(self.model[word])
+            else:
+                embeddings.append(np.zeros(self.model.vector_size))
+        return numpy.mean(embeddings, axis=0)
+
+    def split_camel(self, name: str):
+        return re.sub(
+            '([A-Z][a-z]+)|_', r' \1', re.sub('([A-Z]+)', r' \1', name)
+        ).split()
 
 
 class HuggingFaceEmbedding(AbstractEmbeddingModel):
@@ -112,3 +139,20 @@ class HuggingFaceEmbedding(AbstractEmbeddingModel):
         outputs = self.model(input_ids)
         last_hidden_states = outputs[0]  # The last hidden-state is the first element of the output tuple
         return last_hidden_states.mean(1).detach().numpy()[0]
+
+
+class SentenceTransformersEmbedding(AbstractEmbeddingModel):
+    def __init__(self, name, model, device='cpu'):
+        super().__init__()
+        self._name = f'{name}'
+        self.model = SentenceTransformer(model, device=device)
+        self.model.tokenizer.add_special_tokens({'pad_token': '[PAD]'})
+
+    def get_embedding(self, text: str) -> numpy.ndarray:
+        """
+        Returns the embedding of the text.
+        :param text:
+        :return:
+        """
+        embeddings = self.model.encode(text)
+        return embeddings

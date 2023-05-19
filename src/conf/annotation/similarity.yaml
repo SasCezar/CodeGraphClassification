@@ -1,6 +1,0 @@
-# @package _global_
-# @package _global_
-name: name
-cls:
-  _target_: src.feature.extract.NameFeatureExtraction
-  filter: ${filter}

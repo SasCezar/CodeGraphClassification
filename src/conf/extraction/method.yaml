@@ -1,0 +1,7 @@
+name: name
+cls:
+  _target_: src.feature.extract.MethodFeatureExtraction
+  graph_path: ${arcan_graphs}
+  out_path: ${out_path}/processed/
+  stopwords: None
+  methods_path: /home/sasce/PycharmProjects/CodeGraphClassification/data/processed/content/methods

@@ -123,3 +123,11 @@ def node_package_mapping(graph: igraph.Graph) -> Dict[str, str]:
         if v1['labelV'] == 'container':
             res[v1['filePathRelative']] = v2['filePathRelative']
     return res
+
+
+def parse_settings(settings):
+    config = settings.split('/')
+    if len(config) <= 5:
+        config.append('0')
+
+    return config
