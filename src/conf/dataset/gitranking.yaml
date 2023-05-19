@@ -1,9 +1,0 @@
-# @package _global_
-
-dataset: ${base_path}/data/raw/classification_dataset_lang.csv
-language: JAVA
-repositories_path: ${base_path}/data/raw/repositories/
-arcan_script: ${base_path}/scripts/bash/run-arcan.sh
-arcan_path: ${base_path}/tools/arcan
-repository_path: ${base_path}/data/raw/repositories
-logs_path: ${base_path}/logs/
