@@ -1,4 +1,5 @@
 import json
+import traceback
 from os.path import join
 from pathlib import Path
 
@@ -7,20 +8,19 @@ import pandas as pd
 from hydra.utils import instantiate
 from loguru import logger
 from omegaconf import DictConfig
+from tqdm import tqdm
 
-from annotation.filtering import JSDivergence
-from annotation.node import KeywordAnnotation
+from feature.content import JSONContentExtraction
 from utils import git_clone, get_versions, git_checkout
 
 
 @hydra.main(config_path="../conf", config_name="annotation", version_base="1.2")
 def node_annotation(cfg: DictConfig):
     """
-    Extracts features from a project including the git history (augmented data).
     :param cfg:
     :return:
     """
-    content_extractor = instantiate(cfg.content.cls)
+    content_extractor = JSONContentExtraction(cfg.content_dir)
 
     projects = pd.read_csv(cfg.dataset)
 
@@ -29,15 +29,11 @@ def node_annotation(cfg: DictConfig):
 
     logger.info(f"Extracting features for {len(projects)} projects")
 
-    keywords_path = Path(cfg.keywords_dir, "similarity")
-    keywords_files = sorted(list(keywords_path.glob("*.csv")))
+    annotation = instantiate(cfg.node_annotation.cls) if cfg.node_annotation.cls else None
+    transformation = instantiate(cfg.transformation.cls) if cfg.transformation.cls else None
+    filtering = instantiate(cfg.filtering.cls) if cfg.filtering.cls else None
 
-    annotation = KeywordAnnotation(keywords_files, cfg.annotations_path)
-    transformation = instantiate(cfg.label_tansform) if cfg.label_tansform else None
-    filtering = JSDivergence(0.5)
-
-    for project in projects:
-        logger.info(f"Extracting features for {project}")
+    for project in tqdm(projects):
 
         project_name = project.replace('/', '|')
         if content_extractor.clone:
@@ -66,6 +62,7 @@ def node_annotation(cfg: DictConfig):
                 json.dump(labels, f, ensure_ascii=False)
 
         except Exception as e:
+            traceback.print_exc()
             logger.error(f"Failed to extract features for {project} {num} {sha}")
             logger.error(f"{e}")
             continue
@@ -76,13 +73,14 @@ def compute_node_labels(contents, annotation, transform, filtering):
     for node, content in contents.items():
         vec = annotation.annotate(node, content)
         unannotated = 0
-        if transform:
-            vec = transform.transform(vec)
 
         if filtering:
             unannotated = filtering.filter(vec)
 
-        node_labels[node] = {'distribution': list(vec), "unannotated": unannotated}
+        if transform:
+            vec = transform.transform(vec)
+
+        node_labels[node] = {'distribution': [float(x) for x in vec], "unannotated": unannotated}
 
     return node_labels
 

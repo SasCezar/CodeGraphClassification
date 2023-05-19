@@ -3,6 +3,7 @@ import json
 import igraph
 import numpy as np
 import pandas
+from hydra import initialize, compose
 
 from data.graph import ArcanGraphLoader
 
@@ -58,10 +59,13 @@ def best_node(graph, node_annotations, top_label):
 
 
 def export_for_r():
+    with initialize(version_base=None, config_path="../../src/conf/"):
+        cfg = compose(config_name='annotation.yaml', overrides=["local=default"])
+
     project = "Weka"
-    project_graph_path = "/home/sasce/PycharmProjects/CodeGraphClassification/data/interim/arcanOutput/Waikato|weka-3.8/dependency-graph-903_04804ccd6dff03534cbf3f2a71a35c73eef24fe8.graphml"
-    project_annotation_path = "/home/sasce/PycharmProjects/CodeGraphClassification/data/processed/annotations/kl/name/Waikato|weka-3.8-903-04804ccd6dff03534cbf3f2a71a35c73eef24fe8.csv"
-    label_mapping_path = "/home/sasce/PycharmProjects/CodeGraphClassification/data/processed/annotations/name/label_mapping.json"
+    project_graph_path = f"{cfg.base_path}/data/interim/arcanOutput/Waikato|weka-3.8/dependency-graph-903_04804ccd6dff03534cbf3f2a71a35c73eef24fe8.graphml"
+    project_annotation_path = f"{cfg.base_path}/data/processed/annotations/kl/name/Waikato|weka-3.8-903-04804ccd6dff03534cbf3f2a71a35c73eef24fe8.csv"
+    label_mapping_path = f"{cfg.base_path}/processed/annotations/name/label_mapping.json"
 
     k = 5
 

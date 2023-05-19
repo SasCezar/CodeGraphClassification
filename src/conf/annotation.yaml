@@ -2,23 +2,52 @@
 defaults:
   - _self_
   - content: name
-  - embedding: SO
+  - embedding: fastText
   - local: default
   - dataset: gitranking
   - keyword: yake
-
+  - node_annotation: keyword
+  - filtering: none
+  - transformation: none
+  - ensemble: voting-best
+  - override hydra/launcher: joblib
   - override hydra/hydra_logging: colorlog
   - override hydra/job_logging: colorlog
 
+num_workers: 1
 
-num_workers: 8
+hydra:
+  launcher:
+    n_jobs: ${num_workers}
+#  sweeper:
+#    params:
+#      content: name, identifiers
+#      node_annotation: keyword
+#      #content: name
+#      #embedding: SSO, BERT, fastText
+#      #node_annotation: similarity
+#      transformation: none,single_label,soft_label
+#      filtering: none, jsd25, jsd50
 
 
 force_new: False
 seed: 42
 
+#settings: ${node_annotation.name}/${transformation.name}/${filtering.name}
+settings: ensemble/${ensemble.name}/none/none
 project_path: ${base_path}/data/raw/dataset_with_graphs.csv
 content_dir: ${base_path}/data/processed/content/${content.name}
 keywords_dir: ${base_path}/data/processed/keywords/${content.name}/${keyword.name}
-annotations_path: ${base_path}/data/processed/annotations/${content.name}/
-project_labels_dir: ${base_path}/data/processed/project_labels/${content.name}/
+annotations_dir: ${base_path}/data/processed/annotations/
+annotations_path: ${annotations_dir}/${settings}
+#annotations_path: ${annotations_dir}/ensemble/best
+#annotations_path: ${annotations_dir}/keyword/identifiers/yake/none/JSDivergence/0.5
+project_labels_dir: ${base_path}/data/processed/project_labels/
+project_labels_path: ${project_labels_dir}/${settings}
+#project_labels_path: ${project_labels_dir}/ensemble/best
+#project_labels_path: /home/sasce/PycharmProjects/CodeGraphClassification/data/processed/project_labels/keyword/identifiers/yake/none/JSDivergence/0.5
+package_labels_dir: ${base_path}/data/processed/package_labels/
+package_labels_path: ${package_labels_dir}/${settings}
+stats_dir: ${base_path}/output/stats/
+labelled_graph_dir: ${base_path}/data/processed/labelled_graph
+labelled_graph_path: ${labelled_graph_dir}/${settings}
