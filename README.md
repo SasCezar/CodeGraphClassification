@@ -3,6 +3,11 @@
 This is the official repository of the paper: **_Multi-granular Software Labelling using
 File-level Weak Labelling_**
 
+# NOTE 
+A tool based on this paper is available at: https://github.com/SasCezar/autofl
+
+The tool offers docker image, and a UI, furthermore, it is the currently maintained code.
+
 ## Data
 
 The data for this work is available at the following
